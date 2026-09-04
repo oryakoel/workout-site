@@ -80,7 +80,9 @@ export default function ActiveScreen({ queue, index, timeLeft, isPaused, onPause
               className="w-full rounded-2xl p-4 relative"
               style={{ backgroundColor: C.surface, border: `1px solid ${C.line}`, aspectRatio: "6 / 5", maxWidth: "380px" }}
             >
-              <item.exercise.Illustration />
+              <div style={{ width: "100%", height: "100%", transform: item.side === "left" ? "scaleX(-1)" : undefined }}>
+                <item.exercise.Illustration />
+              </div>
               {item.side && (
                 <span
                   className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold"

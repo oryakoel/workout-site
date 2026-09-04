@@ -1,28 +1,80 @@
+import { makePhotoIllustration } from "./illustrations/PhotoIllustration.jsx";
+import downwardDogPhoto from "../assets/photos/downward-dog.jpg";
+import wideLegStraddlePhoto from "../assets/photos/wide-leg-straddle-stretch.jpg";
+import runnersStretchPhoto from "../assets/photos/runners-stretch.jpg";
+import hipFlexorPhoto from "../assets/photos/hip-flexor-stretch.jpg";
+import butterflyPhoto from "../assets/photos/butterfly-stretch.jpg";
+import straddleSideReachPhoto from "../assets/photos/straddle-side-reach.jpg";
+import seatedHipOpenerPhoto from "../assets/photos/seated-hip-opener.jpg";
+import kneelingForwardReachPhoto from "../assets/photos/kneeling-forward-reach.jpg";
+import straddleFoldToLegPhoto from "../assets/photos/straddle-fold-to-leg.jpg";
+import pigeonBackbendPhoto from "../assets/photos/pigeon-backbend.jpg";
+import seatedBreathingPhoto from "../assets/photos/seated-breathing.jpg";
+import splitsPracticePhoto from "../assets/photos/splits-practice.jpg";
+import standingForwardFoldPhoto from "../assets/photos/standing-forward-fold.jpg";
+import sphinxPosePhoto from "../assets/photos/sphinx-pose.jpg";
+import overheadTricepsPhoto from "../assets/photos/overhead-triceps-stretch.jpg";
+import behindHeadClaspPhoto from "../assets/photos/behind-head-clasp-stretch.jpg";
+import yogiSquatPhoto from "../assets/photos/yogi-squat.jpg";
+import reclinedLegPhoto from "../assets/photos/reclined-leg-stretch.jpg";
+import kneeToChestPhoto from "../assets/photos/knee-to-chest.jpg";
+import seatedSideStretchPhoto from "../assets/photos/seated-side-stretch.jpg";
+import seatedForwardFoldPhoto from "../assets/photos/seated-forward-fold.jpg";
+import lungeKneeHandsPhoto from "../assets/photos/lunge-knee-hands.jpg";
+import deepStraddleFoldPhoto from "../assets/photos/deep-straddle-fold.jpg";
+import twistingLungeSideAnglePhoto from "../assets/photos/twisting-lunge-side-angle.jpg";
+import reclinedWideLegVPhoto from "../assets/photos/reclined-wide-leg-v.jpg";
+import pigeonPosePhoto from "../assets/photos/pigeon-pose.jpg";
+import extendedSideAnglePhoto from "../assets/photos/extended-side-angle.jpg";
+import airSquatsPhoto from "../assets/photos/air-squats.jpg";
+import middleSplitsPhoto from "../assets/photos/middle-splits.jpg";
+import highPlankPhoto from "../assets/photos/high-plank.jpg";
+import forearmPlankPhoto from "../assets/photos/forearm-plank.jpg";
+
+const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
+const WideLegStraddlePhoto = makePhotoIllustration(wideLegStraddlePhoto);
+const RunnersStretchPhoto = makePhotoIllustration(runnersStretchPhoto);
+const HipFlexorPhoto = makePhotoIllustration(hipFlexorPhoto);
+const ButterflyPhoto = makePhotoIllustration(butterflyPhoto);
+const StraddleSideReachPhoto = makePhotoIllustration(straddleSideReachPhoto);
+const SeatedHipOpenerPhoto = makePhotoIllustration(seatedHipOpenerPhoto);
+const KneelingForwardReachPhoto = makePhotoIllustration(kneelingForwardReachPhoto);
+const StraddleFoldToLegPhoto = makePhotoIllustration(straddleFoldToLegPhoto);
+const PigeonBackbendPhoto = makePhotoIllustration(pigeonBackbendPhoto);
+const SeatedBreathingPhoto = makePhotoIllustration(seatedBreathingPhoto);
+const SplitsPracticePhoto = makePhotoIllustration(splitsPracticePhoto);
+const StandingForwardFoldPhoto = makePhotoIllustration(standingForwardFoldPhoto);
+const SphinxPosePhoto = makePhotoIllustration(sphinxPosePhoto);
+const OverheadTricepsPhoto = makePhotoIllustration(overheadTricepsPhoto);
+const BehindHeadClaspPhoto = makePhotoIllustration(behindHeadClaspPhoto);
+const YogiSquatPhoto = makePhotoIllustration(yogiSquatPhoto);
+const ReclinedLegPhoto = makePhotoIllustration(reclinedLegPhoto);
+const KneeToChestPhoto = makePhotoIllustration(kneeToChestPhoto);
+const SeatedSideStretchPhoto = makePhotoIllustration(seatedSideStretchPhoto);
+const SeatedForwardFoldPhoto = makePhotoIllustration(seatedForwardFoldPhoto);
+const LungeKneeHandsPhoto = makePhotoIllustration(lungeKneeHandsPhoto);
+const DeepStraddleFoldPhoto = makePhotoIllustration(deepStraddleFoldPhoto);
+const TwistingLungeSideAnglePhoto = makePhotoIllustration(twistingLungeSideAnglePhoto);
+const ReclinedWideLegVPhoto = makePhotoIllustration(reclinedWideLegVPhoto);
+const PigeonPosePhoto = makePhotoIllustration(pigeonPosePhoto);
+const ExtendedSideAnglePhoto = makePhotoIllustration(extendedSideAnglePhoto);
+const AirSquatsPhoto = makePhotoIllustration(airSquatsPhoto);
+const MiddleSplitsPhoto = makePhotoIllustration(middleSplitsPhoto);
+const HighPlankPhoto = makePhotoIllustration(highPlankPhoto);
+const ForearmPlankPhoto = makePhotoIllustration(forearmPlankPhoto);
+
 import HamstringStretchSVG from "./illustrations/HamstringStretchSVG.jsx";
 import ChestShoulderStretchSVG from "./illustrations/ChestShoulderStretchSVG.jsx";
-import ButterflyStretchSVG from "./illustrations/ButterflyStretchSVG.jsx";
-import HipFlexorStretchSVG from "./illustrations/HipFlexorStretchSVG.jsx";
 import QuadStretchSVG from "./illustrations/QuadStretchSVG.jsx";
-import PlankSVG from "./illustrations/PlankSVG.jsx";
 import BridgeSVG from "./illustrations/BridgeSVG.jsx";
 import SquatHoldSVG from "./illustrations/SquatHoldSVG.jsx";
 import LungeHoldSVG from "./illustrations/LungeHoldSVG.jsx";
 import JumpingJackSVG from "./illustrations/JumpingJackSVG.jsx";
 import HighKneesSVG from "./illustrations/HighKneesSVG.jsx";
-import SeatedBreathingSVG from "./illustrations/SeatedBreathingSVG.jsx";
 import NeckStretchSVG from "./illustrations/NeckStretchSVG.jsx";
-import WideLegStraddleSVG from "./illustrations/WideLegStraddleSVG.jsx";
-import RunnersStretchSVG from "./illustrations/RunnersStretchSVG.jsx";
-import PigeonPoseSVG from "./illustrations/PigeonPoseSVG.jsx";
-import DownwardDogSVG from "./illustrations/DownwardDogSVG.jsx";
 import PyramidPoseSVG from "./illustrations/PyramidPoseSVG.jsx";
-import SeatedForwardFoldSVG from "./illustrations/SeatedForwardFoldSVG.jsx";
 import ReclinedButterflySVG from "./illustrations/ReclinedButterflySVG.jsx";
-import SplitsPracticeSVG from "./illustrations/SplitsPracticeSVG.jsx";
 import FrogPoseSVG from "./illustrations/FrogPoseSVG.jsx";
-import MiddleSplitsSVG from "./illustrations/MiddleSplitsSVG.jsx";
-import KneeToChestSVG from "./illustrations/KneeToChestSVG.jsx";
-import ReclinedLegStretchSVG from "./illustrations/ReclinedLegStretchSVG.jsx";
 import HappyBabySVG from "./illustrations/HappyBabySVG.jsx";
 import SeatedFigure4SVG from "./illustrations/SeatedFigure4SVG.jsx";
 import SideLungeStretchSVG from "./illustrations/SideLungeStretchSVG.jsx";
@@ -48,7 +100,6 @@ import ButtKicksSVG from "./illustrations/ButtKicksSVG.jsx";
 import BurpeeSVG from "./illustrations/BurpeeSVG.jsx";
 import CrissCrossObliqueCrunchSVG from "./illustrations/CrissCrossObliqueCrunchSVG.jsx";
 import MountainClimberSVG from "./illustrations/MountainClimberSVG.jsx";
-import AirSquatSVG from "./illustrations/AirSquatSVG.jsx";
 import BicycleCrunchSVG from "./illustrations/BicycleCrunchSVG.jsx";
 import WallSitSVG from "./illustrations/WallSitSVG.jsx";
 import BasicPushUpSVG from "./illustrations/BasicPushUpSVG.jsx";
@@ -135,7 +186,7 @@ export const EXERCISES = [
       "גב ארוך וזקוף, אין צורך ללחוץ על הברכיים בכוח",
       "לגמישות נוספת, הרכינו מעט את הגו קדימה מהמותניים",
     ],
-    Illustration: ButterflyStretchSVG,
+    Illustration: ButterflyPhoto,
   },
   {
     id: "hip-flexor-stretch",
@@ -150,7 +201,7 @@ export const EXERCISES = [
       "שמרו על הגו זקוף, אל תקשתו יתר על המידה בגב התחתון",
       "אפשר להישען בידיים על הברך הקדמית לשיווי משקל",
     ],
-    Illustration: HipFlexorStretchSVG,
+    Illustration: HipFlexorPhoto,
   },
   {
     id: "quad-stretch",
@@ -180,7 +231,22 @@ export const EXERCISES = [
       "כתפיים בדיוק מעל כפות הידיים",
       "נשמו באופן סדיר, לא לעצור נשימה",
     ],
-    Illustration: PlankSVG,
+    Illustration: HighPlankPhoto,
+  },
+  {
+    id: "forearm-plank",
+    name: "פלאנק על מרפקים",
+    muscleGroup: "ליבה",
+    type: "handstand-strength",
+    defaultDurationSeconds: 30,
+    bilateral: false,
+    tips: [
+      "הניחו את המרפקים ישר מתחת לכתפיים",
+      "שמרו על קו ישר מהראש ועד העקבים",
+      "כווצו בטן וישבן כדי להגן על הגב התחתון",
+      "נשמו באופן סדיר, לא לעצור נשימה",
+    ],
+    Illustration: ForearmPlankPhoto,
   },
   {
     id: "bridge",
@@ -270,7 +336,7 @@ export const EXERCISES = [
       "החזיקו לשנייה ונשפו לאט למשך 6 שניות",
       "הניחו יד אחת על הברך והרפו את הכתפיים",
     ],
-    Illustration: SeatedBreathingSVG,
+    Illustration: SeatedBreathingPhoto,
   },
   {
     id: "neck-stretch",
@@ -300,7 +366,7 @@ export const EXERCISES = [
       "הרכינו את הגו קדימה מהמותניים עם גב ארוך",
       "ככל שהגמישות עולה, נסו ליישר את הברכיים",
     ],
-    Illustration: WideLegStraddleSVG,
+    Illustration: WideLegStraddlePhoto,
   },
   {
     id: "runners-stretch",
@@ -315,7 +381,7 @@ export const EXERCISES = [
       "שמרו על גב ארוך והורידו את החזה לכיוון הרגל הישרה",
       "הידיים יכולות לתמוך על הרצפה משני צידי הרגל",
     ],
-    Illustration: RunnersStretchSVG,
+    Illustration: RunnersStretchPhoto,
   },
   {
     id: "pigeon-pose",
@@ -330,7 +396,7 @@ export const EXERCISES = [
       "אפשר להישאר על הידיים או לרדת על המרפקים לעומק נוסף",
       "נשמו והרפו את האגן לכיוון הרצפה",
     ],
-    Illustration: PigeonPoseSVG,
+    Illustration: PigeonPosePhoto,
   },
   {
     id: "downward-dog",
@@ -345,7 +411,7 @@ export const EXERCISES = [
       '"הליכה" קלה של הרגליים מגבירה את המתיחה',
       "הראש רפוי בין הזרועות",
     ],
-    Illustration: DownwardDogSVG,
+    Illustration: DownwardDogPhoto,
   },
   {
     id: "pyramid-pose",
@@ -375,7 +441,7 @@ export const EXERCISES = [
       "אחזו בקרסוליים או בכפות הרגליים",
       "אל תעגלו את הגב כדי להגיע רחוק יותר — עדיף טווח קטן עם גב ישר",
     ],
-    Illustration: SeatedForwardFoldSVG,
+    Illustration: SeatedForwardFoldPhoto,
   },
   {
     id: "reclined-butterfly",
@@ -405,7 +471,7 @@ export const EXERCISES = [
       "האגן ישר וקדימה, לא מסובב",
       "זו תרגול, לא מבחן — רדו רק עד לתחושה נעימה",
     ],
-    Illustration: SplitsPracticeSVG,
+    Illustration: SplitsPracticePhoto,
   },
   {
     id: "frog-pose",
@@ -435,7 +501,7 @@ export const EXERCISES = [
       "הניחו ידיים על הרצפה לפניכם לתמיכה",
       "הרפו את האגן ותנו לכוח המשיכה לעבוד לאט",
     ],
-    Illustration: MiddleSplitsSVG,
+    Illustration: MiddleSplitsPhoto,
   },
   {
     id: "knee-to-chest",
@@ -450,7 +516,7 @@ export const EXERCISES = [
       "שמרו על הגב התחתון צמוד לרצפה",
       "נשמו עמוק והרפו את הכתפיים",
     ],
-    Illustration: KneeToChestSVG,
+    Illustration: KneeToChestPhoto,
   },
   {
     id: "reclined-leg-stretch",
@@ -465,7 +531,7 @@ export const EXERCISES = [
       "לגמישות נוספת, פתחו את הרגל לצד בעדינות",
       "הרגל השנייה נשארת ארוכה על הרצפה",
     ],
-    Illustration: ReclinedLegStretchSVG,
+    Illustration: ReclinedLegPhoto,
   },
   {
     id: "happy-baby",
@@ -855,7 +921,7 @@ export const EXERCISES = [
       "עלו בחזרה לעמידה מלאה בין חזרה לחזרה",
       'לגרסה מאתגרת יותר, הוסיפו חצי חזרה נוספת בתחתית ("סקוואט וחצי")',
     ],
-    Illustration: AirSquatSVG,
+    Illustration: AirSquatsPhoto,
   },
   {
     id: "bicycle-crunches",
@@ -946,5 +1012,245 @@ export const EXERCISES = [
       "החזיקו ונשמו, ואז החליפו צד",
     ],
     Illustration: SidePlankSVG,
+  },
+  {
+    id: "straddle-side-reach",
+    name: "מתיחת רגליים פתוחות לצד",
+    muscleGroup: "אחורי הירך וצדדי הגו",
+    type: "flexibility",
+    defaultDurationSeconds: 35,
+    bilateral: true,
+    tips: [
+      "שבו עם הרגליים פתוחות לרוחב נוח, כפות הרגליים בעמידה כלפי מעלה",
+      "הרימו יד אחת מעל הראש והתכופפו לצד, לכיוון הרגל הנגדית",
+      "היד השנייה יכולה להחליק לאורך הרגל או לגעת ברצפה",
+      "שאפו אוויר להתארכות, נשפו להעמקת המתיחה, והחליפו צד",
+    ],
+    Illustration: StraddleSideReachPhoto,
+  },
+  {
+    id: "seated-hip-opener",
+    name: "פתיחת ירכיים בישיבה",
+    muscleGroup: "ירך פנימית ואגן",
+    type: "flexibility",
+    defaultDurationSeconds: 35,
+    bilateral: false,
+    tips: [
+      "שבו בישיבה זקופה, כפות הרגליים על הרצפה והברכיים פתוחות לצדדים",
+      "הניחו את הידיים על הרצפה מול הגוף לתמיכה קלה",
+      "הרפו את משקל הברכיים כלפי מטה, בלי לדחוף בכוח",
+      "שמרו על עמוד שדרה ארוך וכתפיים רפויות",
+    ],
+    Illustration: SeatedHipOpenerPhoto,
+  },
+  {
+    id: "kneeling-forward-reach",
+    name: "כריעה עם הושטת ידיים קדימה",
+    muscleGroup: "מפשעה, גב וכתפיים",
+    type: "flexibility",
+    defaultDurationSeconds: 35,
+    bilateral: true,
+    tips: [
+      "כרעו על ברך אחת, הרגל השנייה ישרה לגמרי מאחור",
+      "שלבו את הידיים והושיטו אותן קדימה על הרצפה, מרפקים ישרים",
+      "הורידו את בית החזה לכיוון הרצפה בעדינות, מרגישים מתיחה במפשעה ובגב",
+      "שמרו על נשימה עמוקה, ואז החליפו רגליים",
+    ],
+    Illustration: KneelingForwardReachPhoto,
+  },
+  {
+    id: "straddle-fold-to-leg",
+    name: "מתיחת רגליים פתוחות – כיפוף לרגל אחת",
+    muscleGroup: "אחורי הירך ומפשעה",
+    type: "flexibility",
+    defaultDurationSeconds: 35,
+    bilateral: true,
+    tips: [
+      "שבו עם הרגליים פתוחות לרוחב נוח, כפות הרגליים כלפי מעלה",
+      "סובבו את הגו כך שיפנה לכיוון רגל אחת",
+      "החליקו את שתי הידיים לאורך אותה רגל, לכיוון כף הרגל",
+      "שאפו להאריך את עמוד השדרה בכל נשיפה, בלי לעגל את הגב, והחליפו רגל",
+    ],
+    Illustration: StraddleFoldToLegPhoto,
+  },
+  {
+    id: "pigeon-backbend",
+    name: "יונה עם קשת גב",
+    muscleGroup: "ישבן, ירך חיצונית וחזה",
+    type: "flexibility",
+    defaultDurationSeconds: 35,
+    bilateral: true,
+    tips: [
+      "שבו בתנוחת יונה, השוק הקדמית לרוחב הגוף",
+      "הניחו יד אחת על הרצפה מאחור לתמיכה",
+      "הרימו את החזה כלפי מעלה בעדינות, הראש נוטה לאחור",
+      "הרגישו מתיחה גם בישבן וגם בחלק הקדמי של הגוף, והחליפו צד",
+    ],
+    Illustration: PigeonBackbendPhoto,
+  },
+  {
+    id: "standing-forward-fold",
+    name: "קיפול קדמי בעמידה",
+    muscleGroup: "אחורי הירך וגב תחתון",
+    type: "flexibility",
+    defaultDurationSeconds: 35,
+    bilateral: false,
+    tips: [
+      "עמדו עם הרגליים ברוחב הירכיים, ברכיים רכות מעט",
+      "כופפו קדימה מהמותניים, לא מהגב התחתון",
+      "אחזו במרפקים הנגדיים או תנו לידיים לתלות בחופשיות",
+      "הרפו את הצוואר והראש, נשמו עמוק",
+    ],
+    Illustration: StandingForwardFoldPhoto,
+  },
+  {
+    id: "sphinx-pose",
+    name: "תנוחת ספינקס",
+    muscleGroup: "גב תחתון ובטן",
+    type: "flexibility",
+    defaultDurationSeconds: 35,
+    bilateral: false,
+    tips: [
+      "שכבו על הבטן, מרפקים מתחת לכתפיים, אמות הידיים על הרצפה",
+      "הרימו את בית החזה בעדינות, האגן והרגליים נשארים על הרצפה",
+      "שמרו על הכתפיים רפויות, רחוק מהאוזניים",
+      "נשמו עמוק ותנו לגב התחתון להתארך",
+    ],
+    Illustration: SphinxPosePhoto,
+  },
+  {
+    id: "overhead-triceps-stretch",
+    name: "מתיחת טריצפס מעל הראש",
+    muscleGroup: "טריצפס וכתפיים",
+    type: "flexibility",
+    defaultDurationSeconds: 25,
+    bilateral: true,
+    tips: [
+      "כופפו יד אחת מאחורי הראש, המרפק כלפי מעלה",
+      "אחזו במרפק ביד השנייה ומשכו בעדינות לכיוון האוזן הנגדית",
+      "שמרו על הגב זקוף, בלי לקשת",
+      "נשמו והחליפו יד",
+    ],
+    Illustration: OverheadTricepsPhoto,
+  },
+  {
+    id: "behind-head-clasp-stretch",
+    name: "מתיחת גב עליון וכתפיים מאחורי הראש",
+    muscleGroup: "גב עליון וכתפיים",
+    type: "flexibility",
+    defaultDurationSeconds: 25,
+    bilateral: false,
+    tips: [
+      "שלבו את הידיים מאחורי הראש, המרפקים פתוחים לצדדים",
+      "דחפו קלות את הראש לאחור אל תוך כפות הידיים, תוך התנגדות קלה בידיים",
+      "הרגישו פתיחה בגב העליון ובכתפיים",
+      "שמרו על הצוואר ארוך ורגוע",
+    ],
+    Illustration: BehindHeadClaspPhoto,
+  },
+  {
+    id: "yogi-squat",
+    name: "סקוואט יוגי (Malasana)",
+    muscleGroup: "ירך פנימית ואגן",
+    type: "flexibility",
+    defaultDurationSeconds: 40,
+    bilateral: false,
+    tips: [
+      "רדו לסקוואט עמוק, כפות הרגליים כמעט צמודות לרצפה",
+      "הניחו את הידיים בתפילה מול החזה",
+      "דחפו בעדינות את המרפקים כנגד הברכיים כדי להעמיק את הפתיחה",
+      "שמרו על הגב ארוך, לא מעוגל",
+    ],
+    Illustration: YogiSquatPhoto,
+  },
+  {
+    id: "seated-side-stretch",
+    name: "מתיחת צד בישיבה",
+    muscleGroup: "צדדי הגו",
+    type: "flexibility",
+    defaultDurationSeconds: 30,
+    bilateral: true,
+    tips: [
+      "שבו בישיבה נוחה, גב זקוף",
+      "הרימו יד אחת מעל הראש והתכופפו לצד השני",
+      "היד השנייה יכולה לנוח על הרצפה או על הירך",
+      "שאפו להתארכות ונשפו להעמקת המתיחה, והחליפו צד",
+    ],
+    Illustration: SeatedSideStretchPhoto,
+  },
+  {
+    id: "lunge-knee-hands",
+    name: "לאנג' עם ידיים על הברך",
+    muscleGroup: "מפשעה וירך קדמית",
+    type: "flexibility",
+    defaultDurationSeconds: 30,
+    bilateral: true,
+    tips: [
+      "צעד קדימה ללאנג', הברך הקדמית בזווית 90 מעלות",
+      "הניחו את שתי הידיים על הברך הקדמית לתמיכה",
+      "שמרו על הגו זקוף, המבט קדימה",
+      "הרגישו מתיחה במפשעה של הרגל האחורית, והחליפו צד",
+    ],
+    Illustration: LungeKneeHandsPhoto,
+  },
+  {
+    id: "deep-straddle-fold",
+    name: "מתיחת רגליים פתוחות עמוקה",
+    muscleGroup: "אחורי הירך ומפשעה",
+    type: "flexibility",
+    defaultDurationSeconds: 40,
+    bilateral: false,
+    tips: [
+      "שבו עם הרגליים פתוחות לרוחב מקסימלי ונוח",
+      "הניחו את האמות על הרצפה לפניכם, זו לצד זו",
+      "תנו לגוף לצנוח קדימה לאט, בלי לקפוץ לתוך המתיחה",
+      "נשמו עמוק ותנו לכוח המשיכה להעמיק את המתיחה עם הזמן",
+    ],
+    Illustration: DeepStraddleFoldPhoto,
+  },
+  {
+    id: "twisting-lunge-side-angle",
+    name: "לאנג' עם סיבוב וידיים פתוחות",
+    muscleGroup: "מפשעה, ירך וגו",
+    type: "flexibility",
+    defaultDurationSeconds: 30,
+    bilateral: true,
+    tips: [
+      "מתנוחת לאנג' עמוקה, הניחו יד אחת על הרצפה ליד הרגל הקדמית",
+      "הושיטו את היד השנייה כלפי מעלה, פותחים את בית החזה",
+      "עקבו אחרי היד עם המבט אם נוח",
+      "שמרו על הברך הקדמית מעל הקרסול, והחליפו צד",
+    ],
+    Illustration: TwistingLungeSideAnglePhoto,
+  },
+  {
+    id: "reclined-wide-leg-v",
+    name: "מתיחת רגליים פתוחות בשכיבה",
+    muscleGroup: "מפשעה וירך פנימית",
+    type: "flexibility",
+    defaultDurationSeconds: 40,
+    bilateral: false,
+    tips: [
+      "שכבו על הגב, הרימו את שתי הרגליים ישר כלפי מעלה",
+      "פתחו את הרגליים לצדדים לצורת V, בקצב איטי",
+      "הניחו את הידיים על הירכיים הפנימיות לסיוע עדין, או לצדדים",
+      "נשמו עמוק ותנו לכוח המשיכה לעבוד, בלי לכפות",
+    ],
+    Illustration: ReclinedWideLegVPhoto,
+  },
+  {
+    id: "extended-side-angle",
+    name: "זווית צד מורחבת",
+    muscleGroup: "מפשעה, ירך וצדדי הגו",
+    type: "flexibility",
+    defaultDurationSeconds: 30,
+    bilateral: true,
+    tips: [
+      "מתנוחת לאנג' עמוקה, הטו את הגו לאורך הרגל הקדמית",
+      "הושיטו יד אחת כלפי מעלה ביצירת קו ישר מהעקב האחורי ועד קצות האצבעות",
+      "שמרו על שתי הרגליים פעילות וחזקות",
+      "נשמו והחליפו צד",
+    ],
+    Illustration: ExtendedSideAnglePhoto,
   },
 ];
