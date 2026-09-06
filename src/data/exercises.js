@@ -40,6 +40,9 @@ import reverseLungeReachPhoto from "../assets/photos/reverse-lunge-reach.jpg";
 import wallSitPhoto from "../assets/photos/wall-sit.jpg";
 import jumpingJackPhoto from "../assets/photos/jumping-jack.jpg";
 import happyBabyPhoto from "../assets/photos/happy-baby.jpg";
+import squatHoldPhoto from "../assets/photos/squat-hold.jpg";
+import quadStretchPhoto from "../assets/photos/quad-stretch.jpg";
+import lungeHoldPhoto from "../assets/photos/lunge-hold.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const WideLegStraddlePhoto = makePhotoIllustration(wideLegStraddlePhoto);
@@ -82,12 +85,12 @@ const ReverseLungeReachPhoto = makePhotoIllustration(reverseLungeReachPhoto);
 const WallSitPhoto = makePhotoIllustration(wallSitPhoto);
 const JumpingJackPhoto = makePhotoIllustration(jumpingJackPhoto);
 const HappyBabyPhoto = makePhotoIllustration(happyBabyPhoto);
+const SquatHoldPhoto = makePhotoIllustration(squatHoldPhoto);
+const QuadStretchPhoto = makePhotoIllustration(quadStretchPhoto);
+const LungeHoldPhoto = makePhotoIllustration(lungeHoldPhoto);
 
 import HamstringStretchSVG from "./illustrations/HamstringStretchSVG.jsx";
 import ChestShoulderStretchSVG from "./illustrations/ChestShoulderStretchSVG.jsx";
-import QuadStretchSVG from "./illustrations/QuadStretchSVG.jsx";
-import SquatHoldSVG from "./illustrations/SquatHoldSVG.jsx";
-import LungeHoldSVG from "./illustrations/LungeHoldSVG.jsx";
 import PyramidPoseSVG from "./illustrations/PyramidPoseSVG.jsx";
 import ReclinedButterflySVG from "./illustrations/ReclinedButterflySVG.jsx";
 import FrogPoseSVG from "./illustrations/FrogPoseSVG.jsx";
@@ -226,7 +229,7 @@ export const EXERCISES = [
       "עמוד קבוע מול קיר או כיסא יכול לעזור בשיווי משקל",
       "אל תמשכו את כף הרגל בכוח, רק עד לתחושת מתיחה נעימה",
     ],
-    Illustration: QuadStretchSVG,
+    Illustration: QuadStretchPhoto,
   },
   {
     id: "plank",
@@ -286,7 +289,7 @@ export const EXERCISES = [
       "ידיים קדימה לשיווי משקל",
       "החזיקו את התנוחה בלי לנעול את הברכיים",
     ],
-    Illustration: SquatHoldSVG,
+    Illustration: SquatHoldPhoto,
   },
   {
     id: "lunge-hold",
@@ -301,7 +304,7 @@ export const EXERCISES = [
       "גו זקוף, אל תטו קדימה",
       "החזיקו את שיווי המשקל ונשמו באופן סדיר",
     ],
-    Illustration: LungeHoldSVG,
+    Illustration: LungeHoldPhoto,
   },
   {
     id: "jumping-jack",
