@@ -30,6 +30,16 @@ import airSquatsPhoto from "../assets/photos/air-squats.jpg";
 import middleSplitsPhoto from "../assets/photos/middle-splits.jpg";
 import highPlankPhoto from "../assets/photos/high-plank.jpg";
 import forearmPlankPhoto from "../assets/photos/forearm-plank.jpg";
+import sidePlankPhoto from "../assets/photos/side-plank.jpg";
+import bicycleCrunchesPhoto from "../assets/photos/bicycle-crunches.jpg";
+import bridgePhoto from "../assets/photos/bridge.jpg";
+import reversePlankKneeDrivePhoto from "../assets/photos/reverse-plank-knee-drive.jpg";
+import highKneesPhoto from "../assets/photos/high-knees.jpg";
+import neckStretchPhoto from "../assets/photos/neck-stretch.jpg";
+import reverseLungeReachPhoto from "../assets/photos/reverse-lunge-reach.jpg";
+import wallSitPhoto from "../assets/photos/wall-sit.jpg";
+import jumpingJackPhoto from "../assets/photos/jumping-jack.jpg";
+import happyBabyPhoto from "../assets/photos/happy-baby.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const WideLegStraddlePhoto = makePhotoIllustration(wideLegStraddlePhoto);
@@ -62,24 +72,28 @@ const AirSquatsPhoto = makePhotoIllustration(airSquatsPhoto);
 const MiddleSplitsPhoto = makePhotoIllustration(middleSplitsPhoto);
 const HighPlankPhoto = makePhotoIllustration(highPlankPhoto);
 const ForearmPlankPhoto = makePhotoIllustration(forearmPlankPhoto);
+const SidePlankPhoto = makePhotoIllustration(sidePlankPhoto);
+const BicycleCrunchesPhoto = makePhotoIllustration(bicycleCrunchesPhoto);
+const BridgePhoto = makePhotoIllustration(bridgePhoto);
+const ReversePlankKneeDrivePhoto = makePhotoIllustration(reversePlankKneeDrivePhoto);
+const HighKneesPhoto = makePhotoIllustration(highKneesPhoto);
+const NeckStretchPhoto = makePhotoIllustration(neckStretchPhoto);
+const ReverseLungeReachPhoto = makePhotoIllustration(reverseLungeReachPhoto);
+const WallSitPhoto = makePhotoIllustration(wallSitPhoto);
+const JumpingJackPhoto = makePhotoIllustration(jumpingJackPhoto);
+const HappyBabyPhoto = makePhotoIllustration(happyBabyPhoto);
 
 import HamstringStretchSVG from "./illustrations/HamstringStretchSVG.jsx";
 import ChestShoulderStretchSVG from "./illustrations/ChestShoulderStretchSVG.jsx";
 import QuadStretchSVG from "./illustrations/QuadStretchSVG.jsx";
-import BridgeSVG from "./illustrations/BridgeSVG.jsx";
 import SquatHoldSVG from "./illustrations/SquatHoldSVG.jsx";
 import LungeHoldSVG from "./illustrations/LungeHoldSVG.jsx";
-import JumpingJackSVG from "./illustrations/JumpingJackSVG.jsx";
-import HighKneesSVG from "./illustrations/HighKneesSVG.jsx";
-import NeckStretchSVG from "./illustrations/NeckStretchSVG.jsx";
 import PyramidPoseSVG from "./illustrations/PyramidPoseSVG.jsx";
 import ReclinedButterflySVG from "./illustrations/ReclinedButterflySVG.jsx";
 import FrogPoseSVG from "./illustrations/FrogPoseSVG.jsx";
-import HappyBabySVG from "./illustrations/HappyBabySVG.jsx";
 import SeatedFigure4SVG from "./illustrations/SeatedFigure4SVG.jsx";
 import SideLungeStretchSVG from "./illustrations/SideLungeStretchSVG.jsx";
 import CobraQuadStretchSVG from "./illustrations/CobraQuadStretchSVG.jsx";
-import ReverseLungeReachSVG from "./illustrations/ReverseLungeReachSVG.jsx";
 import GhostRopeSVG from "./illustrations/GhostRopeSVG.jsx";
 import StepOutSquatWalkSVG from "./illustrations/StepOutSquatWalkSVG.jsx";
 import PushUpTRotationSVG from "./illustrations/PushUpTRotationSVG.jsx";
@@ -88,7 +102,6 @@ import RunnerKneeDriveSVG from "./illustrations/RunnerKneeDriveSVG.jsx";
 import SideToSidePushUpSVG from "./illustrations/SideToSidePushUpSVG.jsx";
 import ReverseSnowAngelsSVG from "./illustrations/ReverseSnowAngelsSVG.jsx";
 import PlankKneeRotationSVG from "./illustrations/PlankKneeRotationSVG.jsx";
-import ReversePlankKneeDriveSVG from "./illustrations/ReversePlankKneeDriveSVG.jsx";
 import CommandoSVG from "./illustrations/CommandoSVG.jsx";
 import OverheadPrayerCrunchSVG from "./illustrations/OverheadPrayerCrunchSVG.jsx";
 import HeelTouchesSVG from "./illustrations/HeelTouchesSVG.jsx";
@@ -100,12 +113,9 @@ import ButtKicksSVG from "./illustrations/ButtKicksSVG.jsx";
 import BurpeeSVG from "./illustrations/BurpeeSVG.jsx";
 import CrissCrossObliqueCrunchSVG from "./illustrations/CrissCrossObliqueCrunchSVG.jsx";
 import MountainClimberSVG from "./illustrations/MountainClimberSVG.jsx";
-import BicycleCrunchSVG from "./illustrations/BicycleCrunchSVG.jsx";
-import WallSitSVG from "./illustrations/WallSitSVG.jsx";
 import BasicPushUpSVG from "./illustrations/BasicPushUpSVG.jsx";
 import StepUpSVG from "./illustrations/StepUpSVG.jsx";
 import TricepDipSVG from "./illustrations/TricepDipSVG.jsx";
-import SidePlankSVG from "./illustrations/SidePlankSVG.jsx";
 
 // Every workout is built from one of these types (or "auto", picked by
 // the "תבחר לי" option, which draws from the whole bank). Each exercise
@@ -261,7 +271,7 @@ export const EXERCISES = [
       "כווצו את הישבן בקצה התנועה",
       "הורידו באיטיות בסיום",
     ],
-    Illustration: BridgeSVG,
+    Illustration: BridgePhoto,
   },
   {
     id: "squat-hold",
@@ -306,7 +316,7 @@ export const EXERCISES = [
       "נחתו רך על כפות הרגליים, ברכיים גמישות",
       "שמרו על קצב אחיד לאורך כל התרגיל",
     ],
-    Illustration: JumpingJackSVG,
+    Illustration: JumpingJackPhoto,
   },
   {
     id: "high-knees",
@@ -321,7 +331,7 @@ export const EXERCISES = [
       "שמרו על גו זקוף לאורך כל התרגיל",
       "נחתו על כרית כף הרגל, לא על העקב",
     ],
-    Illustration: HighKneesSVG,
+    Illustration: HighKneesPhoto,
   },
   {
     id: "seated-breathing",
@@ -351,7 +361,7 @@ export const EXERCISES = [
       "אפשר להניח יד קלה על הראש לסיוע עדין, בלי למשוך",
       "נשמו באופן רגוע ועברו לצד השני",
     ],
-    Illustration: NeckStretchSVG,
+    Illustration: NeckStretchPhoto,
   },
   {
     id: "wide-leg-straddle-stretch",
@@ -546,7 +556,7 @@ export const EXERCISES = [
       "אפשר להתנדנד קלות מצד לצד",
       "זו תנוחה משחקית — תיהנו ותרפו",
     ],
-    Illustration: HappyBabySVG,
+    Illustration: HappyBabyPhoto,
   },
   {
     id: "seated-figure-4",
@@ -606,7 +616,7 @@ export const EXERCISES = [
       "חזרו לעמידה והחליפו רגליים לסירוגין",
       "שמרו על הברך הקדמית מעל הקרסול",
     ],
-    Illustration: ReverseLungeReachSVG,
+    Illustration: ReverseLungeReachPhoto,
   },
   {
     id: "ghost-rope",
@@ -741,7 +751,7 @@ export const EXERCISES = [
       "הביאו ברך אחת לכיוון החזה",
       "החליפו רגליים והורידו את האגן בין החזרות",
     ],
-    Illustration: ReversePlankKneeDriveSVG,
+    Illustration: ReversePlankKneeDrivePhoto,
   },
   {
     id: "commandos",
@@ -936,7 +946,7 @@ export const EXERCISES = [
       "המשיכו בתנועת פדלים לסירוגין",
       "שמרו על תנועה מבוקרת, לא מהירה מדי",
     ],
-    Illustration: BicycleCrunchSVG,
+    Illustration: BicycleCrunchesPhoto,
   },
   {
     id: "wall-sit",
@@ -951,7 +961,7 @@ export const EXERCISES = [
       "הברכיים בקו עם הקרסוליים",
       "החזיקו את התנוחה בנשימה סדירה",
     ],
-    Illustration: WallSitSVG,
+    Illustration: WallSitPhoto,
   },
   {
     id: "basic-pushups",
@@ -1011,7 +1021,7 @@ export const EXERCISES = [
       "אפשר להניח את היד השנייה על הירך או להושיט למעלה",
       "החזיקו ונשמו, ואז החליפו צד",
     ],
-    Illustration: SidePlankSVG,
+    Illustration: SidePlankPhoto,
   },
   {
     id: "straddle-side-reach",
