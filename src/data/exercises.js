@@ -40,6 +40,7 @@ import reverseLungeReachPhoto from "../assets/photos/reverse-lunge-reach.jpg";
 import wallSitPhoto from "../assets/photos/wall-sit.jpg";
 import jumpingJackPhoto from "../assets/photos/jumping-jack.jpg";
 import happyBabyPhoto from "../assets/photos/happy-baby.jpg";
+import hamstringStretchPhoto from "../assets/photos/hamstring-stretch.jpg";
 import squatHoldPhoto from "../assets/photos/squat-hold.jpg";
 import quadStretchPhoto from "../assets/photos/quad-stretch.jpg";
 import lungeHoldPhoto from "../assets/photos/lunge-hold.jpg";
@@ -85,11 +86,11 @@ const ReverseLungeReachPhoto = makePhotoIllustration(reverseLungeReachPhoto);
 const WallSitPhoto = makePhotoIllustration(wallSitPhoto);
 const JumpingJackPhoto = makePhotoIllustration(jumpingJackPhoto);
 const HappyBabyPhoto = makePhotoIllustration(happyBabyPhoto);
+const HamstringStretchPhoto = makePhotoIllustration(hamstringStretchPhoto);
 const SquatHoldPhoto = makePhotoIllustration(squatHoldPhoto);
 const QuadStretchPhoto = makePhotoIllustration(quadStretchPhoto);
 const LungeHoldPhoto = makePhotoIllustration(lungeHoldPhoto);
 
-import HamstringStretchSVG from "./illustrations/HamstringStretchSVG.jsx";
 import ChestShoulderStretchSVG from "./illustrations/ChestShoulderStretchSVG.jsx";
 import PyramidPoseSVG from "./illustrations/PyramidPoseSVG.jsx";
 import ReclinedButterflySVG from "./illustrations/ReclinedButterflySVG.jsx";
@@ -169,7 +170,7 @@ export const EXERCISES = [
       "הרכינו את הגו קדימה מהמותניים, גב ארוך וישר",
       "עצרו כשמרגישים מתיחה נעימה מאחורי הירך, לא כאב",
     ],
-    Illustration: HamstringStretchSVG,
+    Illustration: HamstringStretchPhoto,
   },
   {
     id: "chest-shoulder-stretch",
