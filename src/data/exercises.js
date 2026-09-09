@@ -1,5 +1,6 @@
 import { makePhotoIllustration } from "./illustrations/PhotoIllustration.jsx";
 import downwardDogPhoto from "../assets/photos/downward-dog.jpg";
+import downwardDogWallPhoto from "../assets/photos/downward-dog-wall.jpg";
 import wideLegStraddlePhoto from "../assets/photos/wide-leg-straddle-stretch.jpg";
 import runnersStretchPhoto from "../assets/photos/runners-stretch.jpg";
 import hipFlexorPhoto from "../assets/photos/hip-flexor-stretch.jpg";
@@ -46,6 +47,7 @@ import quadStretchPhoto from "../assets/photos/quad-stretch.jpg";
 import lungeHoldPhoto from "../assets/photos/lunge-hold.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
+const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
 const WideLegStraddlePhoto = makePhotoIllustration(wideLegStraddlePhoto);
 const RunnersStretchPhoto = makePhotoIllustration(runnersStretchPhoto);
 const HipFlexorPhoto = makePhotoIllustration(hipFlexorPhoto);
@@ -426,6 +428,21 @@ export const EXERCISES = [
       "הראש רפוי בין הזרועות",
     ],
     Illustration: DownwardDogPhoto,
+  },
+  {
+    id: "downward-dog-wall",
+    name: "כלב מביט למטה עם רגל על הקיר",
+    muscleGroup: "אחורי הירך, שוקיים וכתפיים",
+    type: "flexibility",
+    defaultDurationSeconds: 30,
+    bilateral: true,
+    tips: [
+      "מתנוחת כלב מביט למטה, הניחו כף רגל אחת על הקיר מאחוריכם",
+      "דחפו את העקב לכיוון הקיר להעמקת המתיחה",
+      "שמרו על האגן גבוה והגב ארוך",
+      "נשמו והחליפו רגליים",
+    ],
+    Illustration: DownwardDogWallPhoto,
   },
   {
     id: "pyramid-pose",
