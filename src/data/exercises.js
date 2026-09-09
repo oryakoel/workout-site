@@ -46,6 +46,7 @@ import squatHoldPhoto from "../assets/photos/squat-hold.jpg";
 import quadStretchPhoto from "../assets/photos/quad-stretch.jpg";
 import lungeHoldPhoto from "../assets/photos/lunge-hold.jpg";
 import frogPosePhoto from "../assets/photos/frog-pose.jpg";
+import basicPushupsPhoto from "../assets/photos/basic-pushups.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -94,6 +95,7 @@ const SquatHoldPhoto = makePhotoIllustration(squatHoldPhoto);
 const QuadStretchPhoto = makePhotoIllustration(quadStretchPhoto);
 const LungeHoldPhoto = makePhotoIllustration(lungeHoldPhoto);
 const FrogPosePhoto = makePhotoIllustration(frogPosePhoto);
+const BasicPushupsPhoto = makePhotoIllustration(basicPushupsPhoto);
 
 import ChestShoulderStretchSVG from "./illustrations/ChestShoulderStretchSVG.jsx";
 import PyramidPoseSVG from "./illustrations/PyramidPoseSVG.jsx";
@@ -120,7 +122,6 @@ import ButtKicksSVG from "./illustrations/ButtKicksSVG.jsx";
 import BurpeeSVG from "./illustrations/BurpeeSVG.jsx";
 import CrissCrossObliqueCrunchSVG from "./illustrations/CrissCrossObliqueCrunchSVG.jsx";
 import MountainClimberSVG from "./illustrations/MountainClimberSVG.jsx";
-import BasicPushUpSVG from "./illustrations/BasicPushUpSVG.jsx";
 import StepUpSVG from "./illustrations/StepUpSVG.jsx";
 import TricepDipSVG from "./illustrations/TricepDipSVG.jsx";
 
@@ -998,7 +999,7 @@ export const EXERCISES = [
       "דחפו חזרה למעלה תוך שמירה על הליבה מכווצת",
       "ניתן לרדת לברכיים כגרסה קלה יותר",
     ],
-    Illustration: BasicPushUpSVG,
+    Illustration: BasicPushupsPhoto,
   },
   {
     id: "step-ups",
