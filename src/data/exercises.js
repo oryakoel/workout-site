@@ -48,6 +48,7 @@ import lungeHoldPhoto from "../assets/photos/lunge-hold.jpg";
 import frogPosePhoto from "../assets/photos/frog-pose.jpg";
 import basicPushupsPhoto from "../assets/photos/basic-pushups.jpg";
 import chestShoulderStretchPhoto from "../assets/photos/chest-shoulder-stretch.jpg";
+import pyramidPosePhoto from "../assets/photos/pyramid-pose.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -98,8 +99,8 @@ const LungeHoldPhoto = makePhotoIllustration(lungeHoldPhoto);
 const FrogPosePhoto = makePhotoIllustration(frogPosePhoto);
 const BasicPushupsPhoto = makePhotoIllustration(basicPushupsPhoto);
 const ChestShoulderStretchPhoto = makePhotoIllustration(chestShoulderStretchPhoto);
+const PyramidPosePhoto = makePhotoIllustration(pyramidPosePhoto);
 
-import PyramidPoseSVG from "./illustrations/PyramidPoseSVG.jsx";
 import ReclinedButterflySVG from "./illustrations/ReclinedButterflySVG.jsx";
 import SeatedFigure4SVG from "./illustrations/SeatedFigure4SVG.jsx";
 import SideLungeStretchSVG from "./illustrations/SideLungeStretchSVG.jsx";
@@ -460,7 +461,7 @@ export const EXERCISES = [
       "אפשר לאחוז בקרסול או להישען על בלוקים",
       "שמרו על אגן ישר, לא מסובב",
     ],
-    Illustration: PyramidPoseSVG,
+    Illustration: PyramidPosePhoto,
   },
   {
     id: "seated-forward-fold",
