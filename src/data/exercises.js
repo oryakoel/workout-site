@@ -45,6 +45,7 @@ import hamstringStretchPhoto from "../assets/photos/hamstring-stretch.jpg";
 import squatHoldPhoto from "../assets/photos/squat-hold.jpg";
 import quadStretchPhoto from "../assets/photos/quad-stretch.jpg";
 import lungeHoldPhoto from "../assets/photos/lunge-hold.jpg";
+import frogPosePhoto from "../assets/photos/frog-pose.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -92,11 +93,11 @@ const HamstringStretchPhoto = makePhotoIllustration(hamstringStretchPhoto);
 const SquatHoldPhoto = makePhotoIllustration(squatHoldPhoto);
 const QuadStretchPhoto = makePhotoIllustration(quadStretchPhoto);
 const LungeHoldPhoto = makePhotoIllustration(lungeHoldPhoto);
+const FrogPosePhoto = makePhotoIllustration(frogPosePhoto);
 
 import ChestShoulderStretchSVG from "./illustrations/ChestShoulderStretchSVG.jsx";
 import PyramidPoseSVG from "./illustrations/PyramidPoseSVG.jsx";
 import ReclinedButterflySVG from "./illustrations/ReclinedButterflySVG.jsx";
-import FrogPoseSVG from "./illustrations/FrogPoseSVG.jsx";
 import SeatedFigure4SVG from "./illustrations/SeatedFigure4SVG.jsx";
 import SideLungeStretchSVG from "./illustrations/SideLungeStretchSVG.jsx";
 import CobraQuadStretchSVG from "./illustrations/CobraQuadStretchSVG.jsx";
@@ -517,7 +518,7 @@ export const EXERCISES = [
       "אפשר לרדת על המרפקים לעומק נוסף",
       "תנו לאגן לצנוח לאחור לאט, בלי כאב",
     ],
-    Illustration: FrogPoseSVG,
+    Illustration: FrogPosePhoto,
   },
   {
     id: "middle-splits",
