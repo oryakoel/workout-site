@@ -49,6 +49,7 @@ import frogPosePhoto from "../assets/photos/frog-pose.jpg";
 import basicPushupsPhoto from "../assets/photos/basic-pushups.jpg";
 import chestShoulderStretchPhoto from "../assets/photos/chest-shoulder-stretch.jpg";
 import pyramidPosePhoto from "../assets/photos/pyramid-pose.jpg";
+import reclinedButterflyPhoto from "../assets/photos/reclined-butterfly.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -100,8 +101,8 @@ const FrogPosePhoto = makePhotoIllustration(frogPosePhoto);
 const BasicPushupsPhoto = makePhotoIllustration(basicPushupsPhoto);
 const ChestShoulderStretchPhoto = makePhotoIllustration(chestShoulderStretchPhoto);
 const PyramidPosePhoto = makePhotoIllustration(pyramidPosePhoto);
+const ReclinedButterflyPhoto = makePhotoIllustration(reclinedButterflyPhoto);
 
-import ReclinedButterflySVG from "./illustrations/ReclinedButterflySVG.jsx";
 import SeatedFigure4SVG from "./illustrations/SeatedFigure4SVG.jsx";
 import SideLungeStretchSVG from "./illustrations/SideLungeStretchSVG.jsx";
 import CobraQuadStretchSVG from "./illustrations/CobraQuadStretchSVG.jsx";
@@ -491,7 +492,7 @@ export const EXERCISES = [
       "הניחו ידיים בצדי הגוף או על הבטן",
       "נשמו עמוק והירגעו",
     ],
-    Illustration: ReclinedButterflySVG,
+    Illustration: ReclinedButterflyPhoto,
   },
   {
     id: "splits-practice",
