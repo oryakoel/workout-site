@@ -51,6 +51,7 @@ import chestShoulderStretchPhoto from "../assets/photos/chest-shoulder-stretch.j
 import pyramidPosePhoto from "../assets/photos/pyramid-pose.jpg";
 import reclinedButterflyPhoto from "../assets/photos/reclined-butterfly.jpg";
 import seatedFigure4Photo from "../assets/photos/seated-figure-4.jpg";
+import sideLungeStretchPhoto from "../assets/photos/side-lunge-stretch.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -104,8 +105,8 @@ const ChestShoulderStretchPhoto = makePhotoIllustration(chestShoulderStretchPhot
 const PyramidPosePhoto = makePhotoIllustration(pyramidPosePhoto);
 const ReclinedButterflyPhoto = makePhotoIllustration(reclinedButterflyPhoto);
 const SeatedFigure4Photo = makePhotoIllustration(seatedFigure4Photo);
+const SideLungeStretchPhoto = makePhotoIllustration(sideLungeStretchPhoto);
 
-import SideLungeStretchSVG from "./illustrations/SideLungeStretchSVG.jsx";
 import CobraQuadStretchSVG from "./illustrations/CobraQuadStretchSVG.jsx";
 import GhostRopeSVG from "./illustrations/GhostRopeSVG.jsx";
 import StepOutSquatWalkSVG from "./illustrations/StepOutSquatWalkSVG.jsx";
@@ -613,7 +614,7 @@ export const EXERCISES = [
       "אפשר להיעזר בקיר או כיסא לשיווי משקל",
       "שמרו על כפות הרגליים פונות קדימה",
     ],
-    Illustration: SideLungeStretchSVG,
+    Illustration: SideLungeStretchPhoto,
   },
   {
     id: "cobra-quad-stretch",
