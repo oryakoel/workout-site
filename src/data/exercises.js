@@ -47,6 +47,7 @@ import quadStretchPhoto from "../assets/photos/quad-stretch.jpg";
 import lungeHoldPhoto from "../assets/photos/lunge-hold.jpg";
 import frogPosePhoto from "../assets/photos/frog-pose.jpg";
 import basicPushupsPhoto from "../assets/photos/basic-pushups.jpg";
+import chestShoulderStretchPhoto from "../assets/photos/chest-shoulder-stretch.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -96,8 +97,8 @@ const QuadStretchPhoto = makePhotoIllustration(quadStretchPhoto);
 const LungeHoldPhoto = makePhotoIllustration(lungeHoldPhoto);
 const FrogPosePhoto = makePhotoIllustration(frogPosePhoto);
 const BasicPushupsPhoto = makePhotoIllustration(basicPushupsPhoto);
+const ChestShoulderStretchPhoto = makePhotoIllustration(chestShoulderStretchPhoto);
 
-import ChestShoulderStretchSVG from "./illustrations/ChestShoulderStretchSVG.jsx";
 import PyramidPoseSVG from "./illustrations/PyramidPoseSVG.jsx";
 import ReclinedButterflySVG from "./illustrations/ReclinedButterflySVG.jsx";
 import SeatedFigure4SVG from "./illustrations/SeatedFigure4SVG.jsx";
@@ -189,7 +190,7 @@ export const EXERCISES = [
       "שמרו על הצוואר ארוך, המבט קדימה",
       "אל תנעלו את המרפקים, רק הרגישו פתיחה בחזה",
     ],
-    Illustration: ChestShoulderStretchSVG,
+    Illustration: ChestShoulderStretchPhoto,
   },
   {
     id: "butterfly-stretch",
