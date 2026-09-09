@@ -50,6 +50,7 @@ import basicPushupsPhoto from "../assets/photos/basic-pushups.jpg";
 import chestShoulderStretchPhoto from "../assets/photos/chest-shoulder-stretch.jpg";
 import pyramidPosePhoto from "../assets/photos/pyramid-pose.jpg";
 import reclinedButterflyPhoto from "../assets/photos/reclined-butterfly.jpg";
+import seatedFigure4Photo from "../assets/photos/seated-figure-4.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -102,8 +103,8 @@ const BasicPushupsPhoto = makePhotoIllustration(basicPushupsPhoto);
 const ChestShoulderStretchPhoto = makePhotoIllustration(chestShoulderStretchPhoto);
 const PyramidPosePhoto = makePhotoIllustration(pyramidPosePhoto);
 const ReclinedButterflyPhoto = makePhotoIllustration(reclinedButterflyPhoto);
+const SeatedFigure4Photo = makePhotoIllustration(seatedFigure4Photo);
 
-import SeatedFigure4SVG from "./illustrations/SeatedFigure4SVG.jsx";
 import SideLungeStretchSVG from "./illustrations/SideLungeStretchSVG.jsx";
 import CobraQuadStretchSVG from "./illustrations/CobraQuadStretchSVG.jsx";
 import GhostRopeSVG from "./illustrations/GhostRopeSVG.jsx";
@@ -597,7 +598,7 @@ export const EXERCISES = [
       "שמרו על הגב ארוך, לא מעוגל",
       "עצרו כשמרגישים מתיחה בישבן",
     ],
-    Illustration: SeatedFigure4SVG,
+    Illustration: SeatedFigure4Photo,
   },
   {
     id: "side-lunge-stretch",
