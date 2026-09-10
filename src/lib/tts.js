@@ -2,6 +2,30 @@ import { useCallback, useState } from "react";
 
 const MUTE_STORAGE_KEY = "workout-tts-muted";
 
+// Cloudflare Worker that proxies text-to-speech requests to ElevenLabs
+// (see cloudflare-worker/README.md) — the API key lives only in the
+// Worker's secret storage, never in this bundle. Empty until deployed,
+// in which case speak() just uses the browser's built-in voice below.
+const ELEVENLABS_WORKER_URL = "";
+
+// Once an ElevenLabs call fails (network error, or the monthly character
+// quota is used up), stop retrying it for a while so every announcement
+// doesn't pay for a slow failed request first — fall straight back to
+// the browser voice until this cools down.
+const ELEVEN_COOLDOWN_KEY = "workout-eleven-unavailable-until";
+const ELEVEN_COOLDOWN_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+function isElevenLabsCoolingDown() {
+  if (typeof window === "undefined") return true;
+  const until = Number(window.localStorage.getItem(ELEVEN_COOLDOWN_KEY) || 0);
+  return Date.now() < until;
+}
+
+function markElevenLabsUnavailable() {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(ELEVEN_COOLDOWN_KEY, String(Date.now() + ELEVEN_COOLDOWN_MS));
+}
+
 export function isTTSSupported() {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
@@ -42,11 +66,8 @@ if (isTTSSupported()) {
   };
 }
 
-// Speaks Hebrew text aloud, replacing anything currently being spoken.
-// Silently does nothing if TTS isn't supported or the user muted it —
-// callers never need to check either condition themselves.
-export function speak(text) {
-  if (!isTTSSupported() || getTTSMuted() || !text) return;
+function speakWithBrowserVoice(text) {
+  if (!isTTSSupported()) return;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "he-IL";
@@ -56,8 +77,53 @@ export function speak(text) {
   window.speechSynthesis.speak(utterance);
 }
 
+let currentElevenAudio = null;
+let currentSpeakToken = 0;
+
+async function speakWithElevenLabs(text, token) {
+  const res = await fetch(ELEVENLABS_WORKER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error(`elevenlabs proxy failed: ${res.status}`);
+  const blob = await res.blob();
+  if (token !== currentSpeakToken) return; // superseded by a newer call — drop it
+
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  currentElevenAudio = audio;
+  audio.addEventListener("ended", () => URL.revokeObjectURL(url));
+  await audio.play();
+}
+
+// Speaks Hebrew text aloud, replacing anything currently being spoken.
+// Prefers ElevenLabs (via the Worker proxy) when configured and not
+// cooling down from a recent failure; otherwise (or if that call fails
+// — network issue, offline, or the monthly quota ran out) falls back to
+// the browser's built-in voice. Silently does nothing if muted or empty
+// — callers never need to check either condition themselves.
+export function speak(text) {
+  if (getTTSMuted() || !text) return;
+  cancelSpeech();
+  const token = ++currentSpeakToken;
+
+  if (ELEVENLABS_WORKER_URL && !isElevenLabsCoolingDown()) {
+    speakWithElevenLabs(text, token).catch(() => {
+      markElevenLabsUnavailable();
+      if (token === currentSpeakToken) speakWithBrowserVoice(text);
+    });
+  } else {
+    speakWithBrowserVoice(text);
+  }
+}
+
 export function cancelSpeech() {
   if (isTTSSupported()) window.speechSynthesis.cancel();
+  if (currentElevenAudio) {
+    currentElevenAudio.pause();
+    currentElevenAudio = null;
+  }
 }
 
 let audioCtx = null;
