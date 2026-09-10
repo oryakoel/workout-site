@@ -7,9 +7,9 @@ const ALLOWED_ORIGIN = "https://oryakoel.github.io";
 const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"; // ElevenLabs default multilingual voice
 const MAX_TEXT_LENGTH = 100; // titles only — keeps character usage low
 
-function corsHeaders(origin) {
+function corsHeaders() {
   return {
-    "Access-Control-Allow-Origin": origin === ALLOWED_ORIGIN ? origin : ALLOWED_ORIGIN,
+    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
@@ -17,8 +17,16 @@ function corsHeaders(origin) {
 
 export default {
   async fetch(request, env) {
+    const headers = corsHeaders();
+
+    // A real browser call from the site always sends this Origin header
+    // and can't fake it — reject anything else outright. This doesn't
+    // stop a script that deliberately fakes the header, but it blocks
+    // casual/automated abuse of a discovered Worker URL.
     const origin = request.headers.get("Origin") || "";
-    const headers = corsHeaders(origin);
+    if (origin !== ALLOWED_ORIGIN) {
+      return new Response("Forbidden", { status: 403, headers });
+    }
 
     if (request.method === "OPTIONS") {
       return new Response(null, { headers });

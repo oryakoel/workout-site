@@ -6,7 +6,7 @@ const MUTE_STORAGE_KEY = "workout-tts-muted";
 // (see cloudflare-worker/README.md) — the API key lives only in the
 // Worker's secret storage, never in this bundle. Empty until deployed,
 // in which case speak() just uses the browser's built-in voice below.
-const ELEVENLABS_WORKER_URL = "";
+const ELEVENLABS_WORKER_URL = "https://workout-tts-proxy.ori-yakoel.workers.dev";
 
 // Once an ElevenLabs call fails (network error, or the monthly character
 // quota is used up), stop retrying it for a while so every announcement
@@ -98,17 +98,21 @@ async function speakWithElevenLabs(text, token) {
 }
 
 // Speaks Hebrew text aloud, replacing anything currently being spoken.
-// Prefers ElevenLabs (via the Worker proxy) when configured and not
-// cooling down from a recent failure; otherwise (or if that call fails
-// — network issue, offline, or the monthly quota ran out) falls back to
-// the browser's built-in voice. Silently does nothing if muted or empty
-// — callers never need to check either condition themselves.
-export function speak(text) {
+// `important` opts into ElevenLabs (via the Worker proxy) when it's
+// configured and not cooling down from a recent failure — reserved for
+// the one cue worth spending the tight monthly character quota on (the
+// exercise title when it starts); every other cue (rest previews, the
+// 10-second warning, the left-side label) always uses the browser's
+// free built-in voice. If the ElevenLabs call fails for any reason —
+// network issue, offline, or the monthly quota ran out — this falls
+// back to the browser voice too. Silently does nothing if muted or
+// empty — callers never need to check either condition themselves.
+export function speak(text, { important = false } = {}) {
   if (getTTSMuted() || !text) return;
   cancelSpeech();
   const token = ++currentSpeakToken;
 
-  if (ELEVENLABS_WORKER_URL && !isElevenLabsCoolingDown()) {
+  if (important && ELEVENLABS_WORKER_URL && !isElevenLabsCoolingDown()) {
     speakWithElevenLabs(text, token).catch(() => {
       markElevenLabsUnavailable();
       if (token === currentSpeakToken) speakWithBrowserVoice(text);

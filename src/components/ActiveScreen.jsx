@@ -21,7 +21,10 @@ export default function ActiveScreen({ queue, index, timeLeft, isPaused, onPause
     announcedTenSecRef.current = null;
     beepedSecondsRef.current = new Set();
     if (item.type === "exercise") {
-      speak(exerciseAnnouncement(item.exercise, item.side));
+      // Only the right-side (or non-bilateral) cue is the "start of a
+      // new exercise" moment — worth the ElevenLabs quota. The left-side
+      // cue is just "צד שמאל", read fine by the free browser voice.
+      speak(exerciseAnnouncement(item.exercise, item.side), { important: item.side !== "left" });
     } else if (item.isPrep) {
       speak(prepAnnouncement(item.nextExercise, item.nextSide));
     } else {
