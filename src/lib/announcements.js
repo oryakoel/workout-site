@@ -9,7 +9,7 @@ export function exerciseAnnouncement(exercise, side) {
     return `${SIDE_LABEL.left}`;
   }
   const sideText = side ? `, ${SIDE_LABEL[side]}` : "";
-  return `${exercise.name}${sideText}. ${exercise.tips.join(". ")}`;
+  return `${exercise.name}${sideText}`;
 }
 
 export function tenSecondsLeftAnnouncement() {
