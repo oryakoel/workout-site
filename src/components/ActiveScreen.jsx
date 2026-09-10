@@ -3,7 +3,7 @@ import { Play, Pause, SkipForward, SkipBack, X, Volume2, VolumeX } from "lucide-
 import { C, FONT_MONO } from "../theme.js";
 import { formatTime, SIDE_LABEL } from "../lib/workoutEngine.js";
 import { exerciseAnnouncement, restAnnouncement, prepAnnouncement, tenSecondsLeftAnnouncement } from "../lib/announcements.js";
-import { speak, cancelSpeech, useTTSMuted } from "../lib/tts.js";
+import { speak, cancelSpeech, playBeep, useTTSMuted } from "../lib/tts.js";
 import ProgressDots from "./ProgressDots.jsx";
 
 export default function ActiveScreen({ queue, index, timeLeft, isPaused, onPauseToggle, onSkip, onPrev, onQuit }) {
@@ -15,9 +15,11 @@ export default function ActiveScreen({ queue, index, timeLeft, isPaused, onPause
 
   const [muted, toggleMuted] = useTTSMuted();
   const announcedTenSecRef = useRef(null);
+  const beepedSecondsRef = useRef(new Set());
 
   useEffect(() => {
     announcedTenSecRef.current = null;
+    beepedSecondsRef.current = new Set();
     if (item.type === "exercise") {
       speak(exerciseAnnouncement(item.exercise, item.side));
     } else if (item.isPrep) {
@@ -44,6 +46,14 @@ export default function ActiveScreen({ queue, index, timeLeft, isPaused, onPause
     }
   }, [timeLeft, item, index]);
 
+  useEffect(() => {
+    if (isPaused) return;
+    if (timeLeft >= 1 && timeLeft <= 3 && !beepedSecondsRef.current.has(timeLeft)) {
+      beepedSecondsRef.current.add(timeLeft);
+      playBeep();
+    }
+  }, [timeLeft, isPaused]);
+
   return (
     <div className="flex flex-col h-full px-6 pt-6 pb-8">
       <div className="flex items-center justify-between mb-4">
@@ -67,11 +77,29 @@ export default function ActiveScreen({ queue, index, timeLeft, isPaused, onPause
               {item.isPrep ? "התכוננו" : "מנוחה"}
             </span>
             {item.nextExercise && (
-              <span className="text-sm text-center" style={{ color: C.textMuted }}>
-                {item.isPrep ? "תרגיל ראשון: " : "הבא: "}
-                {item.nextExercise.name}
-                {item.nextSide ? ` · ${SIDE_LABEL[item.nextSide]}` : ""}
-              </span>
+              <>
+                <div
+                  className="w-full rounded-2xl p-4 relative"
+                  style={{ backgroundColor: C.surface, border: `1px solid ${C.line}`, aspectRatio: "6 / 5", maxWidth: "380px" }}
+                >
+                  <div style={{ width: "100%", height: "100%", transform: item.nextSide === "left" ? "scaleX(-1)" : undefined }}>
+                    <item.nextExercise.Illustration />
+                  </div>
+                  {item.nextSide && (
+                    <span
+                      className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{ backgroundColor: C.amber, color: C.bg }}
+                    >
+                      {SIDE_LABEL[item.nextSide]}
+                    </span>
+                  )}
+                </div>
+                <span className="text-sm text-center" style={{ color: C.textMuted }}>
+                  {item.isPrep ? "תרגיל ראשון: " : "הבא: "}
+                  {item.nextExercise.name}
+                  {item.nextSide ? ` · ${SIDE_LABEL[item.nextSide]}` : ""}
+                </span>
+              </>
             )}
           </div>
         ) : (

@@ -18,6 +18,10 @@ export const QUICK_START_MINUTES = 5;
 export const QUICK_START_TYPE = "recovery";
 export const QUICK_START_FALLBACK_TYPE = "flexibility";
 
+// Every workout built for the "flexibility" type ends with this exercise,
+// regardless of the chosen duration.
+export const FLEXIBILITY_FINALE_ID = "splits-practice";
+
 // "auto" (תבחר לי) draws from the whole bank. Any other id filters to
 // that type; if a type has no exercises yet (a placeholder type waiting
 // for real content), we fall back to the full bank rather than building
@@ -84,10 +88,18 @@ function exerciseSeconds(exercise) {
 // fills roughly `minutes` of workout time from the given exercise pool
 // (already filtered by type). Bilateral exercises expand into a
 // right-side rep, a short side-switch rest, then a left-side rep.
-export function buildWorkout(minutes, randomOrder, exercises) {
-  if (exercises.length === 0) return [];
+//
+// `finalExercise`, when given, is excluded from the random draw and
+// always appended as the workout's last exercise instead — regardless
+// of the chosen duration (used to close every flexibility workout with
+// splits practice).
+export function buildWorkout(minutes, randomOrder, exercises, finalExercise) {
+  const pool = finalExercise
+    ? exercises.filter((e) => e.id !== finalExercise.id)
+    : exercises;
+  if (pool.length === 0) return [];
   const totalSeconds = minutes * 60;
-  const next = createPicker(exercises, randomOrder);
+  const next = createPicker(pool, randomOrder);
   const queue = [];
 
   let elapsed = 0;
@@ -115,6 +127,16 @@ export function buildWorkout(minutes, randomOrder, exercises) {
     });
     elapsed += REST_SECONDS;
     current = upcoming;
+  }
+
+  if (finalExercise) {
+    queue.push({
+      type: "rest",
+      duration: REST_SECONDS,
+      nextExercise: finalExercise,
+      nextSide: finalExercise.bilateral ? "right" : null,
+    });
+    pushExercise(queue, finalExercise);
   }
 
   return queue;

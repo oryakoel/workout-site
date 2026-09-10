@@ -60,6 +60,38 @@ export function cancelSpeech() {
   if (isTTSSupported()) window.speechSynthesis.cancel();
 }
 
+let audioCtx = null;
+
+function getAudioContext() {
+  if (typeof window === "undefined") return null;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  if (!audioCtx) audioCtx = new AudioContextClass();
+  return audioCtx;
+}
+
+// A short countdown beep for the last few seconds of any timed segment,
+// so a transition is audible without having to watch the screen. Tied to
+// the same mute toggle as the voice cues.
+export function playBeep() {
+  if (getTTSMuted()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  if (ctx.state === "suspended") ctx.resume();
+
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.value = 880;
+  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+  oscillator.start();
+  oscillator.stop(ctx.currentTime + 0.16);
+}
+
 // Small hook so components can render a mute toggle without each one
 // re-implementing localStorage plumbing.
 export function useTTSMuted() {

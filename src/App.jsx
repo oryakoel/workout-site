@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { C } from "./theme.js";
 import { EXERCISES } from "./data/exercises.js";
-import { buildWorkout, buildQuickStartWorkout, filterByType, QUICK_START_MINUTES } from "./lib/workoutEngine.js";
+import {
+  buildWorkout,
+  buildQuickStartWorkout,
+  filterByType,
+  QUICK_START_MINUTES,
+  FLEXIBILITY_FINALE_ID,
+} from "./lib/workoutEngine.js";
 import HomeScreen from "./components/HomeScreen.jsx";
 import LibraryScreen from "./components/LibraryScreen.jsx";
 import ActiveScreen from "./components/ActiveScreen.jsx";
@@ -29,7 +35,9 @@ export default function App() {
 
   const startWorkout = (minutes) => {
     const pool = filterByType(EXERCISES, workoutType);
-    launchQueue(buildWorkout(minutes, randomOrder, pool), minutes);
+    const finalExercise =
+      workoutType === "flexibility" ? EXERCISES.find((e) => e.id === FLEXIBILITY_FINALE_ID) : undefined;
+    launchQueue(buildWorkout(minutes, randomOrder, pool, finalExercise), minutes);
   };
 
   const quickStart = () => {
