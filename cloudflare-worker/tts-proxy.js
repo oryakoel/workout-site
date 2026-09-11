@@ -47,7 +47,13 @@ export default {
       return new Response("Missing text", { status: 400, headers });
     }
 
-    const voiceId = env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
+    // Lets the site (or a quick manual test) try a different voice without
+    // redeploying — still just picks which voice this same fixed TTS call
+    // uses, so it doesn't widen what the proxy can do.
+    const requestedVoiceId = typeof body.voiceId === "string" ? body.voiceId.trim() : "";
+    const voiceId = /^[A-Za-z0-9]{10,30}$/.test(requestedVoiceId)
+      ? requestedVoiceId
+      : env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
 
     const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: "POST",
