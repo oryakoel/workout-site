@@ -136,7 +136,7 @@ import TricepDipSVG from "./illustrations/TricepDipSVG.jsx";
 export const WORKOUT_TYPES = [
   {
     id: "handstand-strength",
-    label: "כוח לעמוד",
+    label: "כוח לְעַמּוּד",
     description: "אימוני כוח תומכים לעמידת ידיים ואקרובטיקה",
   },
   {
