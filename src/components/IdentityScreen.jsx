@@ -2,7 +2,7 @@ import { useState } from "react";
 import { C } from "../theme.js";
 import { PRESET_USERS } from "../lib/history.js";
 
-export default function IdentityScreen({ onSelect }) {
+export default function IdentityScreen({ onSelect, onSkip }) {
   const [showOther, setShowOther] = useState(false);
   const [otherName, setOtherName] = useState("");
 
@@ -64,6 +64,10 @@ export default function IdentityScreen({ onSelect }) {
           </div>
         )}
       </div>
+
+      <button onClick={onSkip} className="text-sm underline touch-manipulation" style={{ color: C.textMuted }}>
+        להתאמן בלי שמירה
+      </button>
     </div>
   );
 }

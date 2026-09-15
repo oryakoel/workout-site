@@ -34,6 +34,10 @@ export default function App() {
     setScreen("home");
   };
 
+  // currentUser stays null — logWorkout already no-ops without a
+  // userName, so nothing gets saved for the rest of this session.
+  const skipIdentity = () => setScreen("home");
+
   const launchQueue = (q, minutes) => {
     setQueue(q);
     setIndex(0);
@@ -109,7 +113,7 @@ export default function App() {
         className="w-full h-full flex flex-col"
         style={{ backgroundColor: C.bg, maxWidth: "580px" }}
       >
-        {screen === "identity" && <IdentityScreen onSelect={chooseIdentity} />}
+        {screen === "identity" && <IdentityScreen onSelect={chooseIdentity} onSkip={skipIdentity} />}
         {screen === "home" && (
           <HomeScreen
             onStart={startWorkout}
