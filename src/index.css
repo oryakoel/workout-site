@@ -9,6 +9,11 @@ html,
 body,
 #root {
   height: 100%;
+  /* Mobile browsers' address bar isn't counted in 100%/100vh, which can
+     push content below it out of the actually-tappable viewport (worse
+     the lower on the page it sits). 100dvh tracks the real visible
+     viewport; the 100% above is the fallback for browsers without it. */
+  height: 100dvh;
   margin: 0;
 }
 

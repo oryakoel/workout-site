@@ -23,7 +23,7 @@ export default function HomeScreen({
           אימון היום
         </h1>
         <p className="text-base" style={{ color: C.textMuted }}>
-          כמה זמן יש לך?
+          בואו נבנה לך אימון מותאם
         </p>
       </div>
 
@@ -36,17 +36,22 @@ export default function HomeScreen({
         אין לי כוח — 5 דק׳ התאוששות עדינה
       </button>
 
-      <div className="grid grid-cols-3 gap-3">
-        {DURATIONS_MINUTES.map((m) => (
-          <DurationTile key={m} minutes={m} onSelect={onStart} />
-        ))}
-      </div>
-
       <div>
         <p className="text-sm mb-2" style={{ color: C.textMuted }}>
           איזה סוג אימון?
         </p>
         <TypeSelector value={workoutType} onChange={setWorkoutType} />
+      </div>
+
+      <div>
+        <p className="text-sm mb-2" style={{ color: C.textMuted }}>
+          כמה זמן יש לך?
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          {DURATIONS_MINUTES.map((m) => (
+            <DurationTile key={m} minutes={m} onSelect={onStart} />
+          ))}
+        </div>
       </div>
 
       <button
