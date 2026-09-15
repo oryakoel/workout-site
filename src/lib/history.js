@@ -1,7 +1,7 @@
 // Cloudflare Worker + D1 backing the workout history feature (see
 // cloudflare-worker-history/README.md). Empty until deployed, in which
 // case logging/fetching silently no-op — the app works fine without it.
-const HISTORY_WORKER_URL = "";
+const HISTORY_WORKER_URL = "https://workout-history-api.ori-yakoel.workers.dev";
 
 const CURRENT_USER_KEY = "workout-current-user";
 
