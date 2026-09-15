@@ -3,6 +3,7 @@ import { C } from "../theme.js";
 const TABS = [
   { id: "home", label: "אימון" },
   { id: "library", label: "ספריית תרגילים" },
+  { id: "history", label: "היסטוריה" },
 ];
 
 export default function NavTabs({ active, onChange }) {

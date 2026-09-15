@@ -12,9 +12,13 @@ import HomeScreen from "./components/HomeScreen.jsx";
 import LibraryScreen from "./components/LibraryScreen.jsx";
 import ActiveScreen from "./components/ActiveScreen.jsx";
 import DoneScreen from "./components/DoneScreen.jsx";
+import IdentityScreen from "./components/IdentityScreen.jsx";
+import HistoryScreen from "./components/HistoryScreen.jsx";
+import { saveUser, logWorkout } from "./lib/history.js";
 
 export default function App() {
-  const [screen, setScreen] = useState("home");
+  const [screen, setScreen] = useState("identity");
+  const [currentUser, setCurrentUser] = useState(null);
   const [randomOrder, setRandomOrder] = useState(false);
   const [workoutType, setWorkoutType] = useState("auto");
   const [queue, setQueue] = useState([]);
@@ -23,6 +27,12 @@ export default function App() {
   const [isPaused, setIsPaused] = useState(false);
   const [lastMinutes, setLastMinutes] = useState(10);
   const intervalRef = useRef(null);
+
+  const chooseIdentity = (name) => {
+    saveUser(name);
+    setCurrentUser(name);
+    setScreen("home");
+  };
 
   const launchQueue = (q, minutes) => {
     setQueue(q);
@@ -51,6 +61,12 @@ export default function App() {
         setTimeLeft(queue[next].duration);
         return next;
       }
+      logWorkout({
+        userName: currentUser,
+        workoutType,
+        durationMinutes: lastMinutes,
+        exerciseCount: queue.filter((q) => q.type === "exercise").length,
+      });
       setScreen("done");
       return prevIndex;
     });
@@ -93,6 +109,7 @@ export default function App() {
         className="w-full h-full flex flex-col"
         style={{ backgroundColor: C.bg, maxWidth: "580px" }}
       >
+        {screen === "identity" && <IdentityScreen onSelect={chooseIdentity} />}
         {screen === "home" && (
           <HomeScreen
             onStart={startWorkout}
@@ -105,6 +122,7 @@ export default function App() {
           />
         )}
         {screen === "library" && <LibraryScreen exercises={EXERCISES} onNavigate={setScreen} />}
+        {screen === "history" && <HistoryScreen onNavigate={setScreen} />}
         {screen === "active" && queue.length > 0 && (
           <ActiveScreen
             queue={queue}
