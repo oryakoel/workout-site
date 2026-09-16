@@ -3,9 +3,7 @@ export const REST_SECONDS = 15;
 // chosen workout length — not deducted from it.
 export const PREP_SECONDS = 10;
 // Gap between the right-side and left-side rep of a bilateral exercise.
-// Kept short (and easy to tune) rather than a full rest — the point is
-// to switch sides quickly, not recover.
-export const REST_BETWEEN_SIDES_SECONDS = 5;
+export const REST_BETWEEN_SIDES_SECONDS = 10;
 
 export const SIDE_LABEL = {
   right: "צד ימין",

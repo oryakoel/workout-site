@@ -47,11 +47,11 @@ import quadStretchPhoto from "../assets/photos/quad-stretch.jpg";
 import lungeHoldPhoto from "../assets/photos/lunge-hold.jpg";
 import frogPosePhoto from "../assets/photos/frog-pose.jpg";
 import basicPushupsPhoto from "../assets/photos/basic-pushups.jpg";
-import chestShoulderStretchPhoto from "../assets/photos/chest-shoulder-stretch.jpg";
 import pyramidPosePhoto from "../assets/photos/pyramid-pose.jpg";
 import reclinedButterflyPhoto from "../assets/photos/reclined-butterfly.jpg";
 import seatedFigure4Photo from "../assets/photos/seated-figure-4.jpg";
 import sideLungeStretchPhoto from "../assets/photos/side-lunge-stretch.jpg";
+import crowPosePhoto from "../assets/photos/crow-pose.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -101,11 +101,11 @@ const QuadStretchPhoto = makePhotoIllustration(quadStretchPhoto);
 const LungeHoldPhoto = makePhotoIllustration(lungeHoldPhoto);
 const FrogPosePhoto = makePhotoIllustration(frogPosePhoto);
 const BasicPushupsPhoto = makePhotoIllustration(basicPushupsPhoto);
-const ChestShoulderStretchPhoto = makePhotoIllustration(chestShoulderStretchPhoto);
 const PyramidPosePhoto = makePhotoIllustration(pyramidPosePhoto);
 const ReclinedButterflyPhoto = makePhotoIllustration(reclinedButterflyPhoto);
 const SeatedFigure4Photo = makePhotoIllustration(seatedFigure4Photo);
 const SideLungeStretchPhoto = makePhotoIllustration(sideLungeStretchPhoto);
+const CrowPosePhoto = makePhotoIllustration(crowPosePhoto);
 
 import CobraQuadStretchSVG from "./illustrations/CobraQuadStretchSVG.jsx";
 import GhostRopeSVG from "./illustrations/GhostRopeSVG.jsx";
@@ -180,21 +180,6 @@ export const EXERCISES = [
       "עצרו כשמרגישים מתיחה נעימה מאחורי הירך, לא כאב",
     ],
     Illustration: HamstringStretchPhoto,
-  },
-  {
-    id: "chest-shoulder-stretch",
-    name: "מתיחת חזה וכתפיים",
-    muscleGroup: "חזה וכתפיים",
-    type: "flexibility",
-    defaultDurationSeconds: 25,
-    bilateral: false,
-    tips: [
-      "עמדו זקופים ושלבו את הידיים מאחורי הגב",
-      "קרבו את השכמות זו לזו והרימו מעט את החזה קדימה",
-      "שמרו על הצוואר ארוך, המבט קדימה",
-      "אל תנעלו את המרפקים, רק הרגישו פתיחה בחזה",
-    ],
-    Illustration: ChestShoulderStretchPhoto,
   },
   {
     id: "butterfly-stretch",
@@ -1050,6 +1035,21 @@ export const EXERCISES = [
       "החזיקו ונשמו, ואז החליפו צד",
     ],
     Illustration: SidePlankPhoto,
+  },
+  {
+    id: "crow-pose",
+    name: "עמידת עורב",
+    muscleGroup: "ליבה, ידיים וכתפיים",
+    type: "handstand-strength",
+    defaultDurationSeconds: 20,
+    bilateral: false,
+    tips: [
+      "הניחו כפות ידיים על הרצפה ברוחב הכתפיים, אצבעות פרושות",
+      "כופפו ברכיים והניחו אותן על גב הזרועות, מעל המרפקים",
+      "העבירו את משקל הגוף קדימה לאט עד שכפות הרגליים מתרוממות",
+      "הביטו קדימה, לא למטה, ושמרו על הליבה מכווצת לאיזון",
+    ],
+    Illustration: CrowPosePhoto,
   },
   {
     id: "straddle-side-reach",
