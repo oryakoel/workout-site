@@ -66,15 +66,37 @@ if (isTTSSupported()) {
   };
 }
 
-function speakWithBrowserVoice(text) {
-  if (!isTTSSupported()) return;
-  window.speechSynthesis.cancel();
+// Some browsers (notably Chrome on Android) drop the reference to a
+// SpeechSynthesisUtterance and silently stop speaking mid-sentence, or
+// never start at all, if nothing else holds onto it — stashing it on
+// window is a cheap guard against that.
+function speakPlainUtterance(text) {
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "he-IL";
-  utterance.rate = 0.95; // default 1.0 reads slightly rushed for held-stretch cues
-  const voice = pickHebrewVoice();
-  if (voice) utterance.voice = voice;
+  window.__lastUtterance = utterance;
   window.speechSynthesis.speak(utterance);
+}
+
+function speakWithBrowserVoice(text, token) {
+  if (!isTTSSupported()) return;
+  // Chrome on Android has a known bug where calling speak() synchronously
+  // right after cancel() silently drops the new utterance — a short delay
+  // avoids that race (cancelSpeech() just ran in speak() above).
+  setTimeout(() => {
+    if (token !== undefined && token !== currentSpeakToken) return; // superseded
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "he-IL";
+    utterance.rate = 0.95; // default 1.0 reads slightly rushed for held-stretch cues
+    const voice = pickHebrewVoice();
+    if (voice) utterance.voice = voice;
+    utterance.onerror = () => {
+      // Some devices reject this lang/voice pairing outright (e.g. no
+      // Hebrew installed in the device's TTS engine) — retry once with
+      // the engine's own default rather than staying silent.
+      speakPlainUtterance(text);
+    };
+    window.__lastUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, 60);
 }
 
 let currentElevenAudio = null;
@@ -115,10 +137,10 @@ export function speak(text, { important = false } = {}) {
   if (important && ELEVENLABS_WORKER_URL && !isElevenLabsCoolingDown()) {
     speakWithElevenLabs(text, token).catch(() => {
       markElevenLabsUnavailable();
-      if (token === currentSpeakToken) speakWithBrowserVoice(text);
+      if (token === currentSpeakToken) speakWithBrowserVoice(text, token);
     });
   } else {
-    speakWithBrowserVoice(text);
+    speakWithBrowserVoice(text, token);
   }
 }
 
