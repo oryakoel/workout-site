@@ -2,6 +2,7 @@ import { C } from "../theme.js";
 import DurationTile from "./DurationTile.jsx";
 import NavTabs from "./NavTabs.jsx";
 import TypeSelector from "./TypeSelector.jsx";
+import PlantWidget from "./PlantWidget.jsx";
 import { Shuffle, BatteryLow } from "lucide-react";
 import { DURATIONS_MINUTES } from "../lib/workoutEngine.js";
 
@@ -13,18 +14,22 @@ export default function HomeScreen({
   workoutType,
   setWorkoutType,
   onNavigate,
+  currentUser,
 }) {
   return (
     <div className="flex flex-col h-full px-6 pt-6 pb-8 gap-6 overflow-y-auto">
       <NavTabs active="home" onChange={onNavigate} />
 
-      <div>
-        <h1 className="text-3xl font-bold mb-2" style={{ color: C.text }}>
-          אימון היום
-        </h1>
-        <p className="text-base" style={{ color: C.textMuted }}>
-          בואו נבנה לך אימון מותאם
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: C.text }}>
+            אימון היום
+          </h1>
+          <p className="text-base" style={{ color: C.textMuted }}>
+            בואו נבנה לך אימון מותאם
+          </p>
+        </div>
+        <PlantWidget userName={currentUser} variant="badge" />
       </div>
 
       <button

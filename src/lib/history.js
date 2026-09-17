@@ -42,3 +42,27 @@ export async function fetchHistory(userName) {
     return [];
   }
 }
+
+function localDateKey(input) {
+  const d = new Date(input);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+// Consecutive days (ending today or yesterday) with at least one saved
+// workout. A full calendar day with nothing logged breaks the streak;
+// "today" gets a grace period so the streak isn't shown as broken before
+// the day is even over — it only counts from yesterday backward until
+// today's own workout is logged.
+export function computeStreak(entries) {
+  const dates = new Set(entries.map((e) => localDateKey(e.completed_at)));
+  const cursor = new Date();
+  if (!dates.has(localDateKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  let streak = 0;
+  while (dates.has(localDateKey(cursor))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}

@@ -123,10 +123,11 @@ export default function App() {
             workoutType={workoutType}
             setWorkoutType={setWorkoutType}
             onNavigate={setScreen}
+            currentUser={currentUser}
           />
         )}
         {screen === "library" && <LibraryScreen exercises={EXERCISES} onNavigate={setScreen} />}
-        {screen === "history" && <HistoryScreen onNavigate={setScreen} />}
+        {screen === "history" && <HistoryScreen onNavigate={setScreen} currentUser={currentUser} />}
         {screen === "active" && queue.length > 0 && (
           <ActiveScreen
             queue={queue}

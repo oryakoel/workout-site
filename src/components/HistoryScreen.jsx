@@ -3,6 +3,7 @@ import { C } from "../theme.js";
 import { WORKOUT_TYPES } from "../data/exercises.js";
 import { fetchHistory } from "../lib/history.js";
 import NavTabs from "./NavTabs.jsx";
+import PlantWidget from "./PlantWidget.jsx";
 
 const TYPE_LABELS = Object.fromEntries(WORKOUT_TYPES.map((t) => [t.id, t.label]));
 TYPE_LABELS.auto = "תבחר לי";
@@ -12,7 +13,7 @@ function formatDate(isoString) {
   return date.toLocaleDateString("he-IL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export default function HistoryScreen({ onNavigate }) {
+export default function HistoryScreen({ onNavigate, currentUser }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userFilter, setUserFilter] = useState("all");
@@ -42,6 +43,8 @@ export default function HistoryScreen({ onNavigate }) {
           היסטוריית אימונים
         </h1>
       </div>
+
+      {currentUser && <PlantWidget userName={currentUser} variant="full" />}
 
       {users.length > 1 && (
         <div className="flex items-center gap-2 flex-wrap">
