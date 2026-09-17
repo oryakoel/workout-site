@@ -103,16 +103,14 @@ export default function HistoryScreen({ onNavigate, currentUser }) {
                 <span className="text-xs" style={{ color: C.textMuted }}>
                   {formatDate(entry.completed_at)}
                 </span>
-                {entry.user_name === currentUser && (
-                  <button
-                    onClick={() => handleDelete(entry)}
-                    aria-label="מחיקת אימון"
-                    className="touch-manipulation"
-                    style={{ color: C.textMuted }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
+                <button
+                  onClick={() => handleDelete(entry)}
+                  aria-label="מחיקת אימון"
+                  className="touch-manipulation"
+                  style={{ color: C.textMuted }}
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
           ))}
