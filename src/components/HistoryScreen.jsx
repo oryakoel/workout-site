@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { C } from "../theme.js";
 import { WORKOUT_TYPES } from "../data/exercises.js";
-import { fetchHistory } from "../lib/history.js";
+import { fetchHistory, deleteWorkoutEntry } from "../lib/history.js";
 import NavTabs from "./NavTabs.jsx";
 import PlantWidget from "./PlantWidget.jsx";
+import { Trash2 } from "lucide-react";
 
 const TYPE_LABELS = Object.fromEntries(WORKOUT_TYPES.map((t) => [t.id, t.label]));
 TYPE_LABELS.auto = "תבחר לי";
@@ -33,6 +34,12 @@ export default function HistoryScreen({ onNavigate, currentUser }) {
 
   const users = [...new Set(entries.map((e) => e.user_name))];
   const visible = userFilter === "all" ? entries : entries.filter((e) => e.user_name === userFilter);
+
+  const handleDelete = async (entry) => {
+    if (!window.confirm("למחוק את האימון הזה לצמיתות?")) return;
+    const ok = await deleteWorkoutEntry(entry.id);
+    if (ok) setEntries((prev) => prev.filter((e) => e.id !== entry.id));
+  };
 
   return (
     <div className="flex flex-col h-full px-6 pt-6 pb-8 gap-6 overflow-y-auto">
@@ -92,9 +99,21 @@ export default function HistoryScreen({ onNavigate, currentUser }) {
                   {entry.duration_minutes} דקות · {entry.exercise_count} תרגילים
                 </div>
               </div>
-              <span className="text-xs shrink-0" style={{ color: C.textMuted }}>
-                {formatDate(entry.completed_at)}
-              </span>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs" style={{ color: C.textMuted }}>
+                  {formatDate(entry.completed_at)}
+                </span>
+                {entry.user_name === currentUser && (
+                  <button
+                    onClick={() => handleDelete(entry)}
+                    aria-label="מחיקת אימון"
+                    className="touch-manipulation"
+                    style={{ color: C.textMuted }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

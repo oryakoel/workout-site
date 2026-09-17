@@ -11,7 +11,7 @@ const HISTORY_LIMIT = 200;
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
 }
@@ -83,6 +83,15 @@ export default {
         .bind(...params)
         .all();
       return json(results, 200, headers);
+    }
+
+    if (request.method === "DELETE" && url.pathname.startsWith("/workouts/")) {
+      const id = Number(url.pathname.slice("/workouts/".length));
+      if (!Number.isInteger(id) || id <= 0) {
+        return new Response("Invalid id", { status: 400, headers });
+      }
+      await env.DB.prepare("DELETE FROM workouts WHERE id = ?").bind(id).run();
+      return json({ ok: true }, 200, headers);
     }
 
     return new Response("Not found", { status: 404, headers });

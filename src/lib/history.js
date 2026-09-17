@@ -43,6 +43,18 @@ export async function fetchHistory(userName) {
   }
 }
 
+// Returns true on success so the caller can remove the entry from its
+// local list; false on any failure (leaves the list untouched).
+export async function deleteWorkoutEntry(id) {
+  if (!HISTORY_WORKER_URL) return false;
+  try {
+    const res = await fetch(`${HISTORY_WORKER_URL}/workouts/${id}`, { method: "DELETE" });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 function localDateKey(input) {
   const d = new Date(input);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
