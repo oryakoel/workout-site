@@ -110,7 +110,7 @@ export default function LibraryScreen({ exercises, onNavigate }) {
     <div className="flex flex-col h-full px-6 pt-6 pb-8 gap-6">
       <NavTabs active="library" onChange={onNavigate} />
 
-      <div>
+      <div className="shrink-0">
         <h1 className="text-3xl font-bold mb-2" style={{ color: C.text }}>
           ספריית תרגילים
         </h1>
@@ -119,7 +119,7 @@ export default function LibraryScreen({ exercises, onNavigate }) {
         </p>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 shrink-0">
         {FILTERS.map((f) => {
           const isActive = filter === f.id;
           return (
@@ -139,7 +139,7 @@ export default function LibraryScreen({ exercises, onNavigate }) {
         })}
       </div>
 
-      <div className="flex flex-col gap-3 overflow-y-auto">
+      <div className="flex flex-col gap-3 overflow-y-auto flex-1 min-h-0">
         {visible.map((exercise) => (
           <ExerciseRow key={exercise.id} exercise={exercise} onOpen={setSelectedId} />
         ))}
