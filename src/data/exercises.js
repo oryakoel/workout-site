@@ -52,6 +52,11 @@ import reclinedButterflyPhoto from "../assets/photos/reclined-butterfly.jpg";
 import seatedFigure4Photo from "../assets/photos/seated-figure-4.jpg";
 import sideLungeStretchPhoto from "../assets/photos/side-lunge-stretch.jpg";
 import crowPosePhoto from "../assets/photos/crow-pose.jpg";
+import cobraQuadStretchPhoto from "../assets/photos/cobra-quad-stretch.jpg";
+import ghostRopePhoto from "../assets/photos/ghost-rope.jpg";
+import pushUpTRotationPhoto from "../assets/photos/push-up-t-rotation.jpg";
+import pikeShoulderTapsPhoto from "../assets/photos/pike-shoulder-taps.jpg";
+import runnerKneeDrivePhoto from "../assets/photos/runner-step-back-knee-drive.jpg";
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
@@ -106,13 +111,13 @@ const ReclinedButterflyPhoto = makePhotoIllustration(reclinedButterflyPhoto);
 const SeatedFigure4Photo = makePhotoIllustration(seatedFigure4Photo);
 const SideLungeStretchPhoto = makePhotoIllustration(sideLungeStretchPhoto);
 const CrowPosePhoto = makePhotoIllustration(crowPosePhoto);
+const CobraQuadStretchPhoto = makePhotoIllustration(cobraQuadStretchPhoto);
+const GhostRopePhoto = makePhotoIllustration(ghostRopePhoto);
+const PushUpTRotationPhoto = makePhotoIllustration(pushUpTRotationPhoto);
+const PikeShoulderTapsPhoto = makePhotoIllustration(pikeShoulderTapsPhoto);
+const RunnerKneeDrivePhoto = makePhotoIllustration(runnerKneeDrivePhoto);
 
-import CobraQuadStretchSVG from "./illustrations/CobraQuadStretchSVG.jsx";
-import GhostRopeSVG from "./illustrations/GhostRopeSVG.jsx";
 import StepOutSquatWalkSVG from "./illustrations/StepOutSquatWalkSVG.jsx";
-import PushUpTRotationSVG from "./illustrations/PushUpTRotationSVG.jsx";
-import PikeShoulderTapsSVG from "./illustrations/PikeShoulderTapsSVG.jsx";
-import RunnerKneeDriveSVG from "./illustrations/RunnerKneeDriveSVG.jsx";
 import SideToSidePushUpSVG from "./illustrations/SideToSidePushUpSVG.jsx";
 import ReverseSnowAngelsSVG from "./illustrations/ReverseSnowAngelsSVG.jsx";
 import PlankKneeRotationSVG from "./illustrations/PlankKneeRotationSVG.jsx";
@@ -614,7 +619,7 @@ export const EXERCISES = [
       "משכו בעדינות לכיוון הישבן",
       "אם קשה להגיע, אפשר להיעזר ברצועה",
     ],
-    Illustration: CobraQuadStretchSVG,
+    Illustration: CobraQuadStretchPhoto,
   },
   {
     id: "reverse-lunge-reach",
@@ -644,7 +649,7 @@ export const EXERCISES = [
       "סובבו את פרקי הידיים כאילו מסובבים חבל",
       "שמרו על ברכיים רכות בנחיתה",
     ],
-    Illustration: GhostRopeSVG,
+    Illustration: GhostRopePhoto,
   },
   {
     id: "step-out-squat-walk",
@@ -674,7 +679,7 @@ export const EXERCISES = [
       "חזרו למרכז והחליפו צד",
       "שמרו על הליבה מכווצת למניעת נפילת האגן",
     ],
-    Illustration: PushUpTRotationSVG,
+    Illustration: PushUpTRotationPhoto,
   },
   {
     id: "pike-shoulder-taps",
@@ -689,7 +694,7 @@ export const EXERCISES = [
       "החליפו צדדים לסירוגין",
       "שמרו על האגן יציב, בלי להתנדנד",
     ],
-    Illustration: PikeShoulderTapsSVG,
+    Illustration: PikeShoulderTapsPhoto,
   },
   {
     id: "runner-step-back-knee-drive",
@@ -704,7 +709,7 @@ export const EXERCISES = [
       "שמרו על קצב מהיר ורציף",
       "החליפו לצד השני",
     ],
-    Illustration: RunnerKneeDriveSVG,
+    Illustration: RunnerKneeDrivePhoto,
   },
   {
     id: "side-to-side-pushups",
