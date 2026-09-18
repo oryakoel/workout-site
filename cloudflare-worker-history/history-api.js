@@ -6,7 +6,10 @@
 const ALLOWED_ORIGIN = "https://oryakoel.github.io";
 const MAX_NAME_LENGTH = 50;
 const MAX_TYPE_LENGTH = 50;
-const HISTORY_LIMIT = 200;
+// High enough that a genuine years-long daily streak never gets
+// truncated (the streak plant and "all history" view both rely on
+// seeing every day) while staying a tiny response even at the cap.
+const HISTORY_LIMIT = 3650;
 
 function corsHeaders() {
   return {
