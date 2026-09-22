@@ -14,6 +14,7 @@ import pigeonBackbendPhoto from "../assets/photos/pigeon-backbend.jpg";
 import seatedBreathingPhoto from "../assets/photos/seated-breathing.jpg";
 import splitsPracticePhoto from "../assets/photos/splits-practice.jpg";
 import standingForwardFoldPhoto from "../assets/photos/standing-forward-fold.jpg";
+import wallForwardFoldBlockPhoto from "../assets/photos/wall-forward-fold-block.jpg";
 import sphinxPosePhoto from "../assets/photos/sphinx-pose.jpg";
 import overheadTricepsPhoto from "../assets/photos/overhead-triceps-stretch.jpg";
 import behindHeadClaspPhoto from "../assets/photos/behind-head-clasp-stretch.jpg";
@@ -74,6 +75,7 @@ const PigeonBackbendPhoto = makePhotoIllustration(pigeonBackbendPhoto);
 const SeatedBreathingPhoto = makePhotoIllustration(seatedBreathingPhoto);
 const SplitsPracticePhoto = makePhotoIllustration(splitsPracticePhoto);
 const StandingForwardFoldPhoto = makePhotoIllustration(standingForwardFoldPhoto);
+const WallForwardFoldBlockPhoto = makePhotoIllustration(wallForwardFoldBlockPhoto);
 const SphinxPosePhoto = makePhotoIllustration(sphinxPosePhoto);
 const OverheadTricepsPhoto = makePhotoIllustration(overheadTricepsPhoto);
 const BehindHeadClaspPhoto = makePhotoIllustration(behindHeadClaspPhoto);
@@ -1162,6 +1164,21 @@ export const EXERCISES = [
       "הרפו את הצוואר והראש, נשמו עמוק",
     ],
     Illustration: StandingForwardFoldPhoto,
+  },
+  {
+    id: "wall-forward-fold-block",
+    name: "קיפול קדמי ליד קיר עם קובייה",
+    muscleGroup: "אגן, גב תחתון ואחורי הירך",
+    type: "flexibility",
+    defaultDurationSeconds: 40,
+    bilateral: false,
+    tips: [
+      "עמדו ליד קיר ונסו \"לחלץ\" את עצמות הישבן לכיוון הקיר",
+      "התכופפו בגב עגול ואז עברו לגב שטוח (APT)",
+      "לחצו עם הבטן את הקובייה לתוך הירך ונשמו",
+      "אם אפשר, נסו לכופף וליישר את המרפקים",
+    ],
+    Illustration: WallForwardFoldBlockPhoto,
   },
   {
     id: "sphinx-pose",
