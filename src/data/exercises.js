@@ -1,6 +1,7 @@
 import { makePhotoIllustration } from "./illustrations/PhotoIllustration.jsx";
 import downwardDogPhoto from "../assets/photos/downward-dog.jpg";
 import downwardDogWallPhoto from "../assets/photos/downward-dog-wall.jpg";
+import dolphinPushupPhoto from "../assets/photos/dolphin-pushup.jpg";
 import wideLegStraddlePhoto from "../assets/photos/wide-leg-straddle-stretch.jpg";
 import runnersStretchPhoto from "../assets/photos/runners-stretch.jpg";
 import hipFlexorPhoto from "../assets/photos/hip-flexor-stretch.jpg";
@@ -60,6 +61,7 @@ import runnerKneeDrivePhoto from "../assets/photos/runner-step-back-knee-drive.j
 
 const DownwardDogPhoto = makePhotoIllustration(downwardDogPhoto);
 const DownwardDogWallPhoto = makePhotoIllustration(downwardDogWallPhoto);
+const DolphinPushupPhoto = makePhotoIllustration(dolphinPushupPhoto);
 const WideLegStraddlePhoto = makePhotoIllustration(wideLegStraddlePhoto);
 const RunnersStretchPhoto = makePhotoIllustration(runnersStretchPhoto);
 const HipFlexorPhoto = makePhotoIllustration(hipFlexorPhoto);
@@ -440,6 +442,21 @@ export const EXERCISES = [
       "נשמו והחליפו רגליים",
     ],
     Illustration: DownwardDogWallPhoto,
+  },
+  {
+    id: "dolphin-pushup",
+    name: "דולפין (Dolphin Push-Up)",
+    muscleGroup: "כתפיים, ליבה וטריצפס",
+    type: "handstand-strength",
+    defaultDurationSeconds: 45,
+    bilateral: false,
+    tips: [
+      "בירידה לכלב מביט למטה, שימו לב שהידיים ברוחב הכתפיים",
+      "נסו לגעת עם העקבים ברצפה",
+      "בכיפוף המרפקים, נסו שיתקרבו זה לזה",
+      "שמרו על בית החזה פתוח",
+    ],
+    Illustration: DolphinPushupPhoto,
   },
   {
     id: "pyramid-pose",
