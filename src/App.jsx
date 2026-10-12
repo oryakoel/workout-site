@@ -11,6 +11,7 @@ import {
 } from "./lib/sessionClock.js";
 import { useWakeLock } from "./lib/wakeLock.js";
 import { EXERCISES, WORKOUT_TYPES } from "./data/exercises.js";
+import { EXERCISE_META } from "./data/exerciseMeta.js";
 import {
   buildWorkout,
   buildQuickStartWorkout,
@@ -36,6 +37,7 @@ import { useMyEntries } from "./lib/useMyEntries.js";
 import { computeConsistency } from "./lib/consistency.js";
 import { summarizeProgress, classifySession } from "./lib/sessionOutcome.js";
 import { loadPrefs, savePrefs } from "./lib/prefs.js";
+import { loadLastUsed, recordUsed } from "./lib/exerciseHistory.js";
 
 export default function App() {
   // This device remembers who it last was, so the app opens straight to
@@ -149,15 +151,24 @@ export default function App() {
     savePrefs(next);
   };
 
+  const builderOptions = () => ({ meta: EXERCISE_META, lastUsed: loadLastUsed(), now: Date.now() });
+
   const startWorkout = () => {
-    const pool = filterByType(EXERCISES, prefs.type);
+    const pool = filterByType(EXERCISES, prefs.type, EXERCISE_META);
     const finalExercise =
       prefs.type === "flexibility" ? EXERCISES.find((e) => e.id === FLEXIBILITY_FINALE_ID) : undefined;
-    launchQueue(buildWorkout(prefs.minutes, prefs.random, pool, finalExercise), prefs.minutes, prefs.type);
+    // Calm sessions (flexibility, recovery) don't need a dynamic warm-up.
+    const needsWarmup = prefs.type !== "flexibility" && prefs.type !== "recovery";
+    const warmups = needsWarmup ? EXERCISES.filter((e) => EXERCISE_META[e.id]?.phase === "warmup") : [];
+    launchQueue(
+      buildWorkout(prefs.minutes, prefs.random, pool, finalExercise, { ...builderOptions(), warmups }),
+      prefs.minutes,
+      prefs.type,
+    );
   };
 
   const quickStart = () => {
-    launchQueue(buildQuickStartWorkout(EXERCISES), QUICK_START_MINUTES, QUICK_START_TYPE);
+    launchQueue(buildQuickStartWorkout(EXERCISES, builderOptions()), QUICK_START_MINUTES, QUICK_START_TYPE);
   };
 
   const creditElapsed = (i, stepClock, t) => {
@@ -169,6 +180,16 @@ export default function App() {
     progressRef.current[i] = queue[i].duration * 1000;
   };
 
+  // Remembers what was really done (80%+ of its time), on this device, so the
+  // next workout varies. This is about variety, not an account, so guests too.
+  const rememberDoneExercises = () => {
+    recordUsed(
+      queue
+        .map((step, i) => (step.type === "exercise" && (progressRef.current[i] || 0) >= step.duration * 800 ? step.exercise.id : null))
+        .filter(Boolean),
+    );
+  };
+
   // Records what actually happened: time really spent decides whether the
   // session is saved, and whether it counts as completed or partial.
   const finishSession = (reachedEnd) => {
@@ -176,6 +197,7 @@ export default function App() {
     sessionRef.current = { ...sessionRef.current, done: true };
     const summary = summarizeProgress(queue, progressRef.current);
     const status = classifySession({ reachedEnd, ...summary });
+    if (status !== "none") rememberDoneExercises();
     if (status !== "none" && currentUser) {
       enqueueSession({
         clientId: newClientId(),
@@ -235,6 +257,7 @@ export default function App() {
     const summary = summarizeProgress(queue, progressRef.current);
     const status = classifySession({ reachedEnd: false, ...summary });
     if (!currentUser || status === "none") {
+      if (status !== "none") rememberDoneExercises();
       setScreen("home");
       return;
     }

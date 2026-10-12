@@ -112,9 +112,14 @@ export default function HomeScreen({
           onClick={() => onPrefsChange({ ...prefs, random: !prefs.random })}
           className="flex items-center justify-between h-11 touch-manipulation"
         >
-          <span className="flex items-center gap-2 text-sm" style={{ color: C.text }}>
-            <Shuffle size={16} aria-hidden="true" color={prefs.random ? C.accent : C.textMuted} />
-            סדר אקראי
+          <span className="flex flex-col items-start text-right">
+            <span className="flex items-center gap-2 text-sm" style={{ color: C.text }}>
+              <Shuffle size={16} aria-hidden="true" color={prefs.random ? C.accent : C.textMuted} />
+              ערבוב אקראי
+            </span>
+            <span className="text-xs mt-0.5" style={{ color: C.textMuted }}>
+              {prefs.random ? "סדר אקראי לגמרי" : "כבוי: חימום בהתחלה, הרפיה בסוף, ולא אותם תרגילים כל פעם"}
+            </span>
           </span>
           <span
             aria-hidden="true"

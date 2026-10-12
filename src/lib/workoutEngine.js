@@ -1,3 +1,5 @@
+import { orderForFlow, weightedOrder, withoutLoads } from "./routineBuilder.js";
+
 export const REST_SECONDS = 15;
 // A "get ready" countdown before the very first exercise, on top of the
 // chosen workout length — not deducted from it.
@@ -20,12 +22,16 @@ export const QUICK_START_FALLBACK_TYPE = "flexibility";
 // regardless of the chosen duration.
 export const FLEXIBILITY_FINALE_ID = "splits-practice";
 
-// "auto" (תבחר לי) draws from the whole bank. Any other id filters to
-// that type; if a type has no exercises yet (a placeholder type waiting
-// for real content), we fall back to the full bank rather than building
-// an empty workout.
-export function filterByType(exercises, typeId) {
+// "auto" (תבחר לי) draws from the whole bank. "recovery" draws from every
+// gentle exercise (not just the few typed as recovery), so a calm session
+// has real variety. Any other id filters to that type; if a type has no
+// exercises, we fall back to the full bank rather than build an empty workout.
+export function filterByType(exercises, typeId, meta = {}) {
   if (!typeId || typeId === "auto") return exercises;
+  if (typeId === "recovery") {
+    const gentle = exercises.filter((e) => meta[e.id]?.intensity === 1);
+    if (gentle.length > 0) return gentle;
+  }
   const pool = exercises.filter((e) => e.type === typeId);
   return pool.length > 0 ? pool : exercises;
 }
@@ -34,7 +40,7 @@ export function filterByType(exercises, typeId) {
 // the pool has come up (a "shuffled bag"), so a longer workout stays
 // varied instead of looping the same few moves. With randomOrder=false
 // it just cycles the pool in its given order, deterministically.
-function createPicker(pool, randomOrder) {
+function createPicker(pool, randomOrder, rng = Math.random) {
   let bag = [];
   let lastId = null;
 
@@ -42,7 +48,7 @@ function createPicker(pool, randomOrder) {
     bag = [...pool];
     if (randomOrder) {
       for (let i = bag.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(rng() * (i + 1));
         [bag[i], bag[j]] = [bag[j], bag[i]];
       }
       if (bag.length > 1 && bag[0].id === lastId) {
@@ -82,50 +88,101 @@ function exerciseSeconds(exercise) {
     : exercise.defaultDurationSeconds;
 }
 
+// Chooses which exercises fill `minutes` of workout time and in what order.
+//  - randomOrder: a shuffled bag, so nothing repeats until the whole pool
+//    has come up. Pure luck of the draw.
+//  - otherwise ("smart"): favours exercises not done lately, then arranges
+//    them warm-up, main work, cooldown with few position changes.
+// Either way, time is counted as it was before: each exercise plus the rest
+// before the next, stopping once the target is reached.
+function planExercises(pool, targetSeconds, randomOrder, { meta, lastUsed, now, rng }) {
+  const sequence = [];
+  let elapsed = 0;
+
+  if (randomOrder) {
+    const next = createPicker(pool, true, rng);
+    while (true) {
+      const exercise = next();
+      sequence.push(exercise);
+      elapsed += exerciseSeconds(exercise);
+      if (elapsed >= targetSeconds) return sequence;
+      elapsed += REST_SECONDS;
+    }
+  }
+
+  while (elapsed < targetSeconds) {
+    const chosen = [];
+    for (const exercise of weightedOrder(pool, { lastUsed, now, rng })) {
+      chosen.push(exercise);
+      elapsed += exerciseSeconds(exercise);
+      if (elapsed >= targetSeconds) break;
+      elapsed += REST_SECONDS;
+    }
+    const round = orderForFlow(chosen, meta, rng);
+    // Don't open a new round with the exercise the last one ended on.
+    if (sequence.length > 0 && round.length > 1 && round[0].id === sequence[sequence.length - 1].id) {
+      [round[0], round[1]] = [round[1], round[0]];
+    }
+    sequence.push(...round);
+  }
+  return sequence;
+}
+
 // Builds a flat queue of { type: "exercise" | "rest", ... } steps that
 // fills roughly `minutes` of workout time from the given exercise pool
 // (already filtered by type). Bilateral exercises expand into a
 // right-side rep, a short side-switch rest, then a left-side rep.
 //
-// `finalExercise`, when given, is excluded from the random draw and
-// always appended as the workout's last exercise instead — regardless
-// of the chosen duration (used to close every flexibility workout with
-// splits practice).
-export function buildWorkout(minutes, randomOrder, exercises, finalExercise) {
-  const pool = finalExercise
-    ? exercises.filter((e) => e.id !== finalExercise.id)
-    : exercises;
+// `finalExercise`, when given, is excluded from the draw and always
+// appended as the workout's last exercise instead (used to close every
+// flexibility workout with splits practice).
+//
+// options: { meta, lastUsed, now, rng, avoidLoads, warmups } — see routineBuilder.js.
+export function buildWorkout(minutes, randomOrder, exercises, finalExercise, options = {}) {
+  const { meta = {}, lastUsed = {}, now = Date.now(), rng = Math.random, avoidLoads = [], warmups = [] } = options;
+  const base = finalExercise ? exercises.filter((e) => e.id !== finalExercise.id) : exercises;
+  const pool = withoutLoads(base, meta, avoidLoads);
   if (pool.length === 0) return [];
-  const totalSeconds = minutes * 60;
-  const next = createPicker(pool, randomOrder);
+
+  // A session of 10+ minutes opens with a warm-up (two from 20 minutes),
+  // taken from `warmups` — the library's dynamic moves — so a type with none
+  // of its own (strength, full body) still starts warm. Their time counts.
+  const safeWarmups = warmups.filter(
+    (e) => e.id !== finalExercise?.id && !(meta[e.id]?.load ?? []).some((l) => avoidLoads.includes(l)),
+  );
+  const chosenWarmups =
+    !randomOrder && minutes >= 10 && safeWarmups.length > 0
+      ? weightedOrder(safeWarmups, { lastUsed, now, rng }).slice(0, minutes >= 20 ? 2 : 1)
+      : [];
+  const reserved = chosenWarmups.reduce((sum, w) => sum + exerciseSeconds(w) + REST_SECONDS, 0);
+  const remaining = pool.filter((e) => !chosenWarmups.some((w) => w.id === e.id));
+
+  const sequence = [
+    ...orderForFlow(chosenWarmups, meta, rng),
+    ...planExercises(remaining.length > 0 ? remaining : pool, minutes * 60 - reserved, randomOrder, { meta, lastUsed, now, rng }),
+  ];
   const queue = [];
 
-  let elapsed = 0;
-  let current = next();
-
+  const first = sequence[0];
   queue.push({
     type: "rest",
     duration: PREP_SECONDS,
-    nextExercise: current,
-    nextSide: current.bilateral ? "right" : null,
+    nextExercise: first,
+    nextSide: first.bilateral ? "right" : null,
     isPrep: true,
   });
 
-  while (true) {
-    pushExercise(queue, current);
-    elapsed += exerciseSeconds(current);
-    if (elapsed >= totalSeconds) break;
-
-    const upcoming = next();
-    queue.push({
-      type: "rest",
-      duration: REST_SECONDS,
-      nextExercise: upcoming,
-      nextSide: upcoming.bilateral ? "right" : null,
-    });
-    elapsed += REST_SECONDS;
-    current = upcoming;
-  }
+  sequence.forEach((exercise, i) => {
+    if (i > 0) {
+      queue.push({
+        type: "rest",
+        duration: REST_SECONDS,
+        nextExercise: exercise,
+        nextSide: exercise.bilateral ? "right" : null,
+      });
+    }
+    pushExercise(queue, exercise);
+  });
 
   if (finalExercise) {
     queue.push({
@@ -140,13 +197,12 @@ export function buildWorkout(minutes, randomOrder, exercises, finalExercise) {
   return queue;
 }
 
-// The "אין לי כוח" button: a fixed, gentle workout with zero choices.
-// Prefers the recovery pool, falling back to flexibility if recovery
-// has nothing yet.
-export function buildQuickStartWorkout(exercises) {
-  const recoveryPool = exercises.filter((e) => e.type === QUICK_START_TYPE);
-  const pool = recoveryPool.length > 0 ? recoveryPool : exercises.filter((e) => e.type === QUICK_START_FALLBACK_TYPE);
-  return buildWorkout(QUICK_START_MINUTES, true, pool.length > 0 ? pool : exercises);
+// The "אין לי כוח" button: a fixed, gentle workout with zero choices, drawn
+// from every gentle exercise.
+export function buildQuickStartWorkout(exercises, options = {}) {
+  const gentle = filterByType(exercises, QUICK_START_TYPE, options.meta);
+  const pool = gentle.length > 0 && gentle.length < exercises.length ? gentle : exercises.filter((e) => e.type === QUICK_START_FALLBACK_TYPE);
+  return buildWorkout(QUICK_START_MINUTES, false, pool.length > 0 ? pool : exercises, undefined, options);
 }
 
 export function formatTime(seconds) {
