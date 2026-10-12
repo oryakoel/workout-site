@@ -6,7 +6,18 @@ import { exerciseAnnouncement, restAnnouncement, prepAnnouncement, tenSecondsLef
 import { speak, cancelSpeech, playBeep, useTTSMuted } from "../lib/tts.js";
 import ProgressDots from "./ProgressDots.jsx";
 
-export default function ActiveScreen({ queue, index, timeLeft, isPaused, onPauseToggle, onSkip, onPrev, onQuit }) {
+export default function ActiveScreen({
+  queue,
+  index,
+  timeLeft,
+  isPaused,
+  interrupted,
+  wakeLockStatus,
+  onPauseToggle,
+  onSkip,
+  onPrev,
+  onQuit,
+}) {
   const item = queue[index];
   const isRest = item.type === "rest";
   const accent = isRest ? C.teal : C.amber;
@@ -72,6 +83,21 @@ export default function ActiveScreen({ queue, index, timeLeft, isPaused, onPause
       </div>
 
       <ProgressDots queue={queue} index={index} />
+
+      {interrupted && isPaused && (
+        <div
+          role="status"
+          className="mt-3 px-4 py-3 rounded-xl text-sm leading-relaxed"
+          style={{ backgroundColor: C.amberDim, border: `1px solid ${C.amber}`, color: C.text }}
+        >
+          האימון הושהה כי יצאתם מהאפליקציה. לחצו על כפתור ההפעלה כדי להמשיך בדיוק מאותה נקודה.
+        </div>
+      )}
+      {wakeLockStatus === "unsupported" && !isPaused && (
+        <p className="mt-3 text-xs" style={{ color: C.textMuted }}>
+          הדפדפן לא מאפשר להשאיר את המסך דלוק. אם המסך ייכבה, האימון יושהה.
+        </p>
+      )}
 
       <div className="flex-1 flex flex-col items-center justify-center gap-6 py-4 overflow-y-auto">
         {isRest ? (

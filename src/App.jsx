@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { C } from "./theme.js";
+import { startClock, pauseClock, resumeClock, isRunning, secondsLeft, advanceClock } from "./lib/sessionClock.js";
+import { useWakeLock } from "./lib/wakeLock.js";
 import { EXERCISES } from "./data/exercises.js";
 import {
   buildWorkout,
@@ -22,11 +24,26 @@ export default function App() {
   const [randomOrder, setRandomOrder] = useState(false);
   const [workoutType, setWorkoutType] = useState("auto");
   const [queue, setQueue] = useState([]);
-  const [index, setIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [lastMinutes, setLastMinutes] = useState(10);
-  const intervalRef = useRef(null);
+
+  // The session is { index, clock }: which step we're on and a timestamp
+  // clock for it. The ref mirrors it so timers/event handlers always read
+  // the latest value without stale closures; `now` only exists to make
+  // the displayed countdown re-render.
+  const [session, setSession] = useState({ index: 0, clock: startClock(0, 0), done: false });
+  const sessionRef = useRef(session);
+  const [now, setNow] = useState(0);
+  const [interrupted, setInterrupted] = useState(false);
+
+  const commit = (next) => {
+    sessionRef.current = next;
+    setSession(next);
+  };
+
+  const { index, clock } = session;
+  const isPaused = !isRunning(clock);
+  const timeLeft = secondsLeft(clock, now);
+  const wakeLockStatus = useWakeLock(screen === "active" && !isPaused);
 
   const chooseIdentity = (name) => {
     saveUser(name);
@@ -39,10 +56,11 @@ export default function App() {
   const skipIdentity = () => setScreen("home");
 
   const launchQueue = (q, minutes) => {
+    const t = Date.now();
     setQueue(q);
-    setIndex(0);
-    setTimeLeft(q[0].duration);
-    setIsPaused(false);
+    commit({ index: 0, clock: startClock(q[0].duration, t), done: false });
+    setNow(t);
+    setInterrupted(false);
     setLastMinutes(minutes);
     setScreen("active");
   };
@@ -58,49 +76,73 @@ export default function App() {
     launchQueue(buildQuickStartWorkout(EXERCISES), QUICK_START_MINUTES);
   };
 
+  const exerciseCount = queue.filter((q) => q.type === "exercise").length;
+
+  const completeWorkout = () => {
+    if (sessionRef.current.done) return;
+    sessionRef.current = { ...sessionRef.current, done: true };
+    logWorkout({ userName: currentUser, workoutType, durationMinutes: lastMinutes, exerciseCount });
+    setScreen("done");
+  };
+
+  // Manual skips/previous start the new step now, keeping the current
+  // paused/running state.
+  const moveTo = (target) => {
+    const t = Date.now();
+    const fresh = startClock(queue[target].duration, t);
+    commit({ ...sessionRef.current, index: target, clock: isRunning(sessionRef.current.clock) ? fresh : pauseClock(fresh, t) });
+    setNow(t);
+  };
+
   const goNext = () => {
-    setIndex((prevIndex) => {
-      const next = prevIndex + 1;
-      if (next < queue.length) {
-        setTimeLeft(queue[next].duration);
-        return next;
-      }
-      logWorkout({
-        userName: currentUser,
-        workoutType,
-        durationMinutes: lastMinutes,
-        exerciseCount: queue.filter((q) => q.type === "exercise").length,
-      });
-      setScreen("done");
-      return prevIndex;
-    });
+    if (sessionRef.current.index + 1 >= queue.length) completeWorkout();
+    else moveTo(sessionRef.current.index + 1);
   };
 
   const goPrev = () => {
-    setIndex((prevIndex) => {
-      if (prevIndex === 0) return prevIndex;
-      const prev = prevIndex - 1;
-      setTimeLeft(queue[prev].duration);
-      return prev;
-    });
+    if (sessionRef.current.index > 0) moveTo(sessionRef.current.index - 1);
   };
 
+  const togglePause = () => {
+    const t = Date.now();
+    const { clock: current } = sessionRef.current;
+    commit({ ...sessionRef.current, clock: isRunning(current) ? pauseClock(current, t) : resumeClock(current, t) });
+    setNow(t);
+    setInterrupted(false);
+  };
+
+  // Tick 4x a second against the wall clock; stepping through elapsed
+  // segments and finishing happen here, driven by timestamps, not counts.
   useEffect(() => {
     if (screen !== "active" || isPaused) return;
-    intervalRef.current = setInterval(() => {
-      setTimeLeft((t) => t - 1);
-    }, 1000);
-    return () => clearInterval(intervalRef.current);
-  }, [screen, isPaused, index]);
-
-  useEffect(() => {
-    if (screen === "active" && timeLeft <= 0) {
-      goNext();
-    }
+    const durations = queue.map((q) => q.duration);
+    const id = setInterval(() => {
+      const t = Date.now();
+      const { index: i, clock: c, done } = sessionRef.current;
+      if (done) return;
+      const result = advanceClock(c, i, durations, t);
+      setNow(t);
+      if (result.finished) completeWorkout();
+      else if (result.index !== i) commit({ ...sessionRef.current, index: result.index, clock: result.clock });
+    }, 250);
+    return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft]);
+  }, [screen, isPaused, queue]);
 
-  const exerciseCount = queue.filter((q) => q.type === "exercise").length;
+  // Cues (voice, beeps) can't run in the background, so leaving the app
+  // pauses the session instead of letting it silently run on.
+  useEffect(() => {
+    if (screen !== "active" || isPaused) return;
+    const onVisibility = () => {
+      if (document.visibilityState !== "hidden") return;
+      const t = Date.now();
+      commit({ ...sessionRef.current, clock: pauseClock(sessionRef.current.clock, t) });
+      setNow(t);
+      setInterrupted(true);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [screen, isPaused]);
 
   return (
     <div
@@ -134,7 +176,9 @@ export default function App() {
             index={index}
             timeLeft={timeLeft}
             isPaused={isPaused}
-            onPauseToggle={() => setIsPaused((p) => !p)}
+            interrupted={interrupted}
+            wakeLockStatus={wakeLockStatus}
+            onPauseToggle={togglePause}
             onSkip={goNext}
             onPrev={goPrev}
             onQuit={() => setScreen("home")}
