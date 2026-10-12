@@ -1,38 +1,54 @@
 # Workout History API (Cloudflare Worker + D1)
 
-Stores and serves workout history (who trained, workout type, duration,
-exercise count, when) in a free Cloudflare D1 (SQLite) database, via a
-small Worker. No secret key needed — D1 access comes from the binding
-itself, not an API key.
+Stores workout history and private per-person data in a free Cloudflare D1
+(SQLite) database, behind PIN protection. No secret keys: D1 access comes
+from the binding.
 
-## 1. Create the D1 database
+## Install or update
 
-1. Go to https://dash.cloudflare.com → **Storage & Databases** → **D1
-   SQL Database** → **Create**.
-2. Name it, e.g., `workout-history-db` → **Create**.
-3. Open it, go to the **Console** tab, paste in the contents of
-   `schema.sql` from this folder, and run it. This creates the
-   `workouts` table.
+1. **Database** (first install only): dash.cloudflare.com -> Storage &
+   Databases -> D1 -> Create, e.g. `workout-history-db`. Leave it empty.
+2. **Worker**: Workers & Pages -> `workout-history-api` (or create one) ->
+   **Edit code** -> replace everything with `history-api.js` -> **Deploy**.
+3. **Binding** (first install only): Settings -> Bindings -> Add -> D1
+   Database, variable name exactly `DB`, pick the database. Save and deploy.
 
-## 2. Create the Worker
+The Worker builds and upgrades its own tables on first use, keeping
+existing history. There is no SQL to run.
 
-1. **Compute (Workers & Pages)** → **Create application** → **Start
-   with Hello World!** → name it, e.g., `workout-history-api` →
-   Deploy.
-2. **Edit code** → delete everything → paste in the contents of
-   `history-api.js` from this folder → **Deploy**.
+## How protection works
 
-## 3. Bind the D1 database to the Worker
+- Reading history is open: it is shared between the people using the app.
+- The first device to set a 4-digit PIN for a name **claims** it. After
+  that, saving or deleting that name's workouts needs the token its PIN
+  login hands out. Unclaimed names stay open so older app versions keep
+  working until they update.
+- Profiles and saved routines always need a token.
+- Five wrong PINs lock the name for 15 minutes. PINs are stored only as a
+  salted hash; device tokens only as a hash.
+- It stops casual tampering, not a determined attacker (a 4-digit PIN is
+  small, and a script can fake the Origin header). Fine for a small group
+  of people who trust each other.
 
-1. Back on the Worker's page → **Settings** → **Bindings** → **Add**.
-2. Type: **D1 Database**.
-3. Variable name: `DB` (must be exactly this — the code reads
-   `env.DB`).
-4. Database: select `workout-history-db` (the one created in step 1).
-5. **Save and deploy**.
+## Forgot a PIN
 
-## 4. Get the URL
+In the D1 console run, with the name filled in (history is kept):
 
-Copy the Worker's URL from the top of its page — looks like
-`https://workout-history-api.<your-subdomain>.workers.dev` — and send
-it back so it can be wired into the site.
+    DELETE FROM device_tokens WHERE user_name = 'NAME';
+    DELETE FROM users WHERE name = 'NAME';
+
+The next person to open the app as that name sets a new PIN.
+
+## Endpoints
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| GET | `/auth/status?name=` | open |
+| POST | `/auth/claim` `{name, pin}` | open (this is the login) |
+| GET | `/auth/me` | token |
+| GET | `/workouts?user=` | open |
+| POST | `/workouts` | token if the name is claimed |
+| DELETE | `/workouts/:id` | token if the name is claimed |
+| GET, PUT | `/profile` | token |
+| GET | `/routines` | token |
+| PUT, DELETE | `/routines/:id` | token |
