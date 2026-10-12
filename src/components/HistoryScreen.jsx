@@ -4,7 +4,7 @@ import { WORKOUT_TYPES } from "../data/exercises.js";
 import { fetchHistory, deleteWorkoutEntry } from "../lib/history.js";
 import { getAuthStatus, getToken } from "../lib/auth.js";
 import { Chip } from "./ui.jsx";
-import PlantWidget from "./PlantWidget.jsx";
+import GardenCard from "./GardenCard.jsx";
 import SyncNotice from "./SyncNotice.jsx";
 import { Trash2 } from "lucide-react";
 
@@ -16,7 +16,7 @@ function formatDate(isoString) {
   return date.toLocaleDateString("he-IL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export default function HistoryScreen({ currentUser, syncPending, needsSignIn, onSignIn }) {
+export default function HistoryScreen({ currentUser, consistency, syncPending, needsSignIn, onSignIn }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userFilter, setUserFilter] = useState("all");
@@ -77,7 +77,7 @@ export default function HistoryScreen({ currentUser, syncPending, needsSignIn, o
 
       <SyncNotice pending={syncPending} needsSignIn={needsSignIn} onSignIn={onSignIn} />
 
-      {currentUser && <PlantWidget userName={currentUser} variant="full" />}
+      {currentUser && consistency && <GardenCard consistency={consistency} />}
 
       {users.length > 1 && (
         <div className="flex items-center gap-2 flex-wrap" role="group" aria-label="סינון לפי משתמש">

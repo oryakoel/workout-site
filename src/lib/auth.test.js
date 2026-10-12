@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearToken, claimName, getAuthStatus, getToken, setToken } from "./auth.js";
 import { apiRequest } from "./api.js";
-import { computeStreak } from "./history.js";
 
 function fakeWindow() {
   const store = new Map();
@@ -105,22 +104,5 @@ describe("auth calls", () => {
     expect(await claimName("אור", "1234")).toEqual({ ok: false, reason: "network" });
     vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new Error("x"))));
     expect(await claimName("אור", "1234")).toEqual({ ok: false, reason: "network" });
-  });
-});
-
-describe("computeStreak ignores partial sessions", () => {
-  const day = (offset, status) => {
-    const d = new Date();
-    d.setDate(d.getDate() - offset);
-    d.setHours(12, 0, 0, 0);
-    return { completed_at: d.toISOString(), status };
-  };
-
-  it("counts completed and legacy (no status) sessions", () => {
-    expect(computeStreak([day(0, "completed"), day(1, null), day(2, undefined)])).toBe(3);
-  });
-
-  it("a partial session does not make a day count", () => {
-    expect(computeStreak([day(0, "completed"), day(1, "partial"), day(2, "completed")])).toBe(1);
   });
 });

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { C } from "./theme.js";
 import {
   startClock,
@@ -32,6 +32,8 @@ import { saveUser, readIdentity, GUEST } from "./lib/history.js";
 import { getToken, setToken } from "./lib/auth.js";
 import { enqueueSession, newClientId } from "./lib/sessionQueue.js";
 import { useSessionSync } from "./lib/useSessionSync.js";
+import { useMyEntries } from "./lib/useMyEntries.js";
+import { computeConsistency } from "./lib/consistency.js";
 import { summarizeProgress, classifySession } from "./lib/sessionOutcome.js";
 import { loadPrefs, savePrefs } from "./lib/prefs.js";
 
@@ -51,6 +53,13 @@ export default function App() {
 
   const [prefs, setPrefs] = useState(() =>
     loadPrefs({ types: ["auto", ...WORKOUT_TYPES.map((t) => t.id)], minutes: DURATIONS_MINUTES }),
+  );
+  // The signed-in person's own sessions drive the week card and the plant.
+  // It reloads when returning to Home/History and when the sync queue changes.
+  const mine = useMyEntries(currentUser, `${screen === "home" || screen === "history" ? screen : "other"}:${sync.pending}`);
+  const consistency = useMemo(
+    () => computeConsistency(mine.entries, { goal: prefs.weeklyGoal, now: mine.loadedAt }),
+    [mine.entries, mine.loadedAt, prefs.weeklyGoal],
   );
   const [queue, setQueue] = useState([]);
   const [lastMinutes, setLastMinutes] = useState(10);
@@ -322,11 +331,13 @@ export default function App() {
               onQuickStart={quickStart}
               currentUser={currentUser}
               onSwitchUser={() => setScreen("identity")}
+              consistency={consistency}
+              consistencyOffline={mine.offline}
               {...syncProps}
             />
           )}
           {screen === "library" && <LibraryScreen exercises={EXERCISES} />}
-          {screen === "history" && <HistoryScreen currentUser={currentUser} {...syncProps} />}
+          {screen === "history" && <HistoryScreen currentUser={currentUser} consistency={consistency} {...syncProps} />}
           {screen === "active" && queue.length > 0 && (
             <ActiveScreen
               queue={queue}

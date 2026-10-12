@@ -15,12 +15,20 @@ describe("parsePrefs", () => {
   });
 
   it("keeps valid saved choices", () => {
-    const raw = JSON.stringify({ type: "cardio", minutes: 20, random: true });
-    expect(parsePrefs(raw, valid)).toEqual({ type: "cardio", minutes: 20, random: true });
+    const raw = JSON.stringify({ type: "cardio", minutes: 20, random: true, weeklyGoal: 6 });
+    expect(parsePrefs(raw, valid)).toEqual({ type: "cardio", minutes: 20, random: true, weeklyGoal: 6 });
   });
 
   it("replaces only the values that are no longer valid", () => {
     const raw = JSON.stringify({ type: "deleted-type", minutes: 20, random: "yes" });
-    expect(parsePrefs(raw, valid)).toEqual({ type: "auto", minutes: 20, random: false });
+    expect(parsePrefs(raw, valid)).toEqual({ type: "auto", minutes: 20, random: false, weeklyGoal: 4 });
+  });
+
+  it("defaults the weekly goal to 4 and only accepts 1 to 7", () => {
+    expect(parsePrefs(JSON.stringify({ weeklyGoal: 3 }), valid).weeklyGoal).toBe(3);
+    for (const bad of [0, 8, 2.5, "4", null]) {
+      expect(parsePrefs(JSON.stringify({ weeklyGoal: bad }), valid).weeklyGoal).toBe(4);
+    }
+    expect(parsePrefs(null, valid).weeklyGoal).toBe(4);
   });
 });

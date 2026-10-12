@@ -26,12 +26,18 @@ export function saveUser(name) {
   window.localStorage.setItem(CURRENT_USER_KEY, name);
 }
 
-// Returns [] if the request fails — callers render an empty,
-// error-tolerant state either way. Reading history is open to everyone.
-export async function fetchHistory(userName) {
+// { ok, entries }. `ok` is false when the server can't be reached, so
+// callers can tell "no workouts yet" from "couldn't load". Reading history
+// is open to everyone.
+export async function fetchHistoryResult(userName) {
   const query = userName ? `?user=${encodeURIComponent(userName)}` : "";
   const result = await apiRequest("GET", `/workouts${query}`);
-  return result.ok && Array.isArray(result.data) ? result.data : [];
+  if (result.ok && Array.isArray(result.data)) return { ok: true, entries: result.data };
+  return { ok: false, entries: [] };
+}
+
+export async function fetchHistory(userName) {
+  return (await fetchHistoryResult(userName)).entries;
 }
 
 // { ok: true } on success; otherwise { ok: false, status } where 401 means
@@ -39,29 +45,4 @@ export async function fetchHistory(userName) {
 export async function deleteWorkoutEntry(id, token) {
   const result = await apiRequest("DELETE", `/workouts/${id}`, { token });
   return { ok: result.ok, status: result.status };
-}
-
-function localDateKey(input) {
-  const d = new Date(input);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-}
-
-// Consecutive days (ending today or yesterday) with at least one saved
-// workout. A full calendar day with nothing logged breaks the streak;
-// "today" gets a grace period so the streak isn't shown as broken before
-// the day is even over — it only counts from yesterday backward until
-// today's own workout is logged.
-export function computeStreak(entries) {
-  // A partial session (quit early, or mostly skipped) isn't a day trained.
-  const dates = new Set(entries.filter((e) => e.status !== "partial").map((e) => localDateKey(e.completed_at)));
-  const cursor = new Date();
-  if (!dates.has(localDateKey(cursor))) {
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  let streak = 0;
-  while (dates.has(localDateKey(cursor))) {
-    streak++;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
 }

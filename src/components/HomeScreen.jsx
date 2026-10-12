@@ -3,7 +3,7 @@ import { C, FONT_MONO } from "../theme.js";
 import { DURATIONS_MINUTES } from "../lib/workoutEngine.js";
 import { WORKOUT_TYPES } from "../data/exercises.js";
 import { Avatar, Button, Card, Chip, SectionLabel } from "./ui.jsx";
-import PlantWidget from "./PlantWidget.jsx";
+import WeekCard from "./WeekCard.jsx";
 import VoiceCheck from "./VoiceCheck.jsx";
 import SyncNotice from "./SyncNotice.jsx";
 
@@ -19,10 +19,12 @@ export default function HomeScreen({
   syncPending,
   needsSignIn,
   onSignIn,
+  consistency,
+  consistencyOffline,
 }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto px-5 pt-6 pb-6 gap-6">
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex items-center gap-3">
         <button
           onClick={onSwitchUser}
           aria-label={currentUser ? `${currentUser}, החלפת משתמש` : "אימון ללא שמירה, החלפת משתמש"}
@@ -33,7 +35,6 @@ export default function HomeScreen({
           <span className="text-sm font-medium">{currentUser || "ללא שמירה"}</span>
           <ChevronDown size={16} aria-hidden="true" color={C.textMuted} />
         </button>
-        <PlantWidget userName={currentUser} variant="badge" />
       </header>
 
       <SyncNotice pending={syncPending} needsSignIn={needsSignIn} onSignIn={onSignIn} />
@@ -46,6 +47,22 @@ export default function HomeScreen({
           בחרו סוג וזמן, והכול מוכן.
         </p>
       </div>
+
+      {currentUser ? (
+        <WeekCard
+          consistency={consistency}
+          goal={prefs.weeklyGoal}
+          onGoalChange={(weeklyGoal) => onPrefsChange({ ...prefs, weeklyGoal })}
+          offline={consistencyOffline}
+        />
+      ) : (
+        <div
+          className="p-4 rounded-3xl text-sm leading-relaxed"
+          style={{ backgroundColor: C.surface, border: `1px solid ${C.line}`, color: C.textMuted }}
+        >
+          מתאמנים בלי שמירה, ולכן ההתקדמות לא נספרת. לחצו על השם למעלה כדי לבחור שם ולבנות רצף שבועי.
+        </div>
+      )}
 
       <Card className="flex flex-col gap-6">
         <section aria-labelledby="type-label">
