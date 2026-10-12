@@ -5,6 +5,7 @@ import { WORKOUT_TYPES } from "../data/exercises.js";
 import { Avatar, Button, Card, Chip, SectionLabel } from "./ui.jsx";
 import PlantWidget from "./PlantWidget.jsx";
 import VoiceCheck from "./VoiceCheck.jsx";
+import SyncNotice from "./SyncNotice.jsx";
 
 const TYPE_OPTIONS = [{ id: "auto", label: "תבחר לי" }, ...WORKOUT_TYPES];
 
@@ -15,6 +16,9 @@ export default function HomeScreen({
   onQuickStart,
   currentUser,
   onSwitchUser,
+  syncPending,
+  needsSignIn,
+  onSignIn,
 }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto px-5 pt-6 pb-6 gap-6">
@@ -31,6 +35,8 @@ export default function HomeScreen({
         </button>
         <PlantWidget userName={currentUser} variant="badge" />
       </header>
+
+      <SyncNotice pending={syncPending} needsSignIn={needsSignIn} onSignIn={onSignIn} />
 
       <div>
         <h1 className="text-3xl font-bold" style={{ color: C.text }}>

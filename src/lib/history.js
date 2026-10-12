@@ -1,7 +1,4 @@
-// Cloudflare Worker + D1 backing the workout history feature (see
-// cloudflare-worker-history/README.md). Empty until deployed, in which
-// case logging/fetching silently no-op — the app works fine without it.
-const HISTORY_WORKER_URL = "https://workout-history-api.ori-yakoel.workers.dev";
+import { apiRequest } from "./api.js";
 
 const CURRENT_USER_KEY = "workout-current-user";
 
@@ -29,42 +26,19 @@ export function saveUser(name) {
   window.localStorage.setItem(CURRENT_USER_KEY, name);
 }
 
-// Fire-and-forget: a failed/offline log shouldn't interrupt the workout
-// flow, so callers don't need to await or handle errors.
-export function logWorkout({ userName, workoutType, durationMinutes, exerciseCount }) {
-  if (!HISTORY_WORKER_URL || !userName) return;
-  fetch(`${HISTORY_WORKER_URL}/workouts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userName, workoutType, durationMinutes, exerciseCount }),
-  }).catch(() => {});
-}
-
-// Returns [] if the Worker isn't configured or the request fails —
-// callers render an empty/error-tolerant state either way.
+// Returns [] if the request fails — callers render an empty,
+// error-tolerant state either way. Reading history is open to everyone.
 export async function fetchHistory(userName) {
-  if (!HISTORY_WORKER_URL) return [];
-  const url = new URL(`${HISTORY_WORKER_URL}/workouts`);
-  if (userName) url.searchParams.set("user", userName);
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    return await res.json();
-  } catch {
-    return [];
-  }
+  const query = userName ? `?user=${encodeURIComponent(userName)}` : "";
+  const result = await apiRequest("GET", `/workouts${query}`);
+  return result.ok && Array.isArray(result.data) ? result.data : [];
 }
 
-// Returns true on success so the caller can remove the entry from its
-// local list; false on any failure (leaves the list untouched).
-export async function deleteWorkoutEntry(id) {
-  if (!HISTORY_WORKER_URL) return false;
-  try {
-    const res = await fetch(`${HISTORY_WORKER_URL}/workouts/${id}`, { method: "DELETE" });
-    return res.ok;
-  } catch {
-    return false;
-  }
+// { ok: true } on success; otherwise { ok: false, status } where 401 means
+// "not yours to delete" and 0 means the server could not be reached.
+export async function deleteWorkoutEntry(id, token) {
+  const result = await apiRequest("DELETE", `/workouts/${id}`, { token });
+  return { ok: result.ok, status: result.status };
 }
 
 function localDateKey(input) {
@@ -78,7 +52,8 @@ function localDateKey(input) {
 // the day is even over — it only counts from yesterday backward until
 // today's own workout is logged.
 export function computeStreak(entries) {
-  const dates = new Set(entries.map((e) => localDateKey(e.completed_at)));
+  // A partial session (quit early, or mostly skipped) isn't a day trained.
+  const dates = new Set(entries.filter((e) => e.status !== "partial").map((e) => localDateKey(e.completed_at)));
   const cursor = new Date();
   if (!dates.has(localDateKey(cursor))) {
     cursor.setDate(cursor.getDate() - 1);

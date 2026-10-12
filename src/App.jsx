@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { C } from "./theme.js";
-import { startClock, pauseClock, resumeClock, isRunning, secondsLeft, advanceClock } from "./lib/sessionClock.js";
+import {
+  startClock,
+  pauseClock,
+  resumeClock,
+  isRunning,
+  secondsLeft,
+  remainingMs,
+  advanceClock,
+} from "./lib/sessionClock.js";
 import { useWakeLock } from "./lib/wakeLock.js";
 import { EXERCISES, WORKOUT_TYPES } from "./data/exercises.js";
 import {
@@ -8,6 +16,7 @@ import {
   buildQuickStartWorkout,
   filterByType,
   QUICK_START_MINUTES,
+  QUICK_START_TYPE,
   FLEXIBILITY_FINALE_ID,
   DURATIONS_MINUTES,
 } from "./lib/workoutEngine.js";
@@ -16,24 +25,40 @@ import LibraryScreen from "./components/LibraryScreen.jsx";
 import ActiveScreen from "./components/ActiveScreen.jsx";
 import DoneScreen from "./components/DoneScreen.jsx";
 import IdentityScreen from "./components/IdentityScreen.jsx";
+import PinScreen from "./components/PinScreen.jsx";
 import HistoryScreen from "./components/HistoryScreen.jsx";
 import TabBar from "./components/TabBar.jsx";
-import { saveUser, logWorkout, readIdentity, GUEST } from "./lib/history.js";
+import { saveUser, readIdentity, GUEST } from "./lib/history.js";
+import { getToken, setToken } from "./lib/auth.js";
+import { enqueueSession, newClientId } from "./lib/sessionQueue.js";
+import { useSessionSync } from "./lib/useSessionSync.js";
+import { summarizeProgress, classifySession } from "./lib/sessionOutcome.js";
 import { loadPrefs, savePrefs } from "./lib/prefs.js";
 
 export default function App() {
   // This device remembers who it last was, so the app opens straight to
-  // Home; tapping the name there brings the picker back.
-  const [identity] = useState(readIdentity);
-  const [hasChosenIdentity, setHasChosenIdentity] = useState(identity.chosen);
-  const [screen, setScreen] = useState(identity.chosen ? "home" : "identity");
-  const [currentUser, setCurrentUser] = useState(identity.user);
+  // Home; tapping the name there brings the picker back. A remembered name
+  // with no sign-in token (from before PINs existed) goes to the PIN screen.
+  const [boot] = useState(() => {
+    const identity = readIdentity();
+    return { identity, needsPin: Boolean(identity.chosen && identity.user && !getToken(identity.user)) };
+  });
+  const [hasChosenIdentity, setHasChosenIdentity] = useState(boot.identity.chosen);
+  const [screen, setScreen] = useState(!boot.identity.chosen ? "identity" : boot.needsPin ? "pin" : "home");
+  const [currentUser, setCurrentUser] = useState(boot.identity.user);
+  const [pinFor, setPinFor] = useState(boot.needsPin ? boot.identity.user : null);
+  const sync = useSessionSync();
+
   const [prefs, setPrefs] = useState(() =>
     loadPrefs({ types: ["auto", ...WORKOUT_TYPES.map((t) => t.id)], minutes: DURATIONS_MINUTES }),
   );
-  const workoutType = prefs.type;
   const [queue, setQueue] = useState([]);
   const [lastMinutes, setLastMinutes] = useState(10);
+  const [outcome, setOutcome] = useState(null);
+  const sessionTypeRef = useRef("auto");
+  // Most milliseconds actually spent (unpaused, in the foreground) on each
+  // queue step; this is what decides how a session is recorded.
+  const progressRef = useRef([]);
 
   // The session is { index, clock }: which step we're on and a timestamp
   // clock for it. The ref mirrors it so timers/event handlers always read
@@ -54,25 +79,55 @@ export default function App() {
   const timeLeft = secondsLeft(clock, now);
   const wakeLockStatus = useWakeLock(screen === "active" && !isPaused);
 
-  const chooseIdentity = (name) => {
+  const finalizeIdentity = (name) => {
     saveUser(name);
     setCurrentUser(name);
     setHasChosenIdentity(true);
+    setPinFor(null);
     setScreen("home");
+    sync.flush();
   };
 
-  // currentUser stays null — logWorkout already no-ops without a
-  // userName, so nothing gets saved while training as a guest.
+  const chooseIdentity = (name) => {
+    if (getToken(name)) {
+      finalizeIdentity(name);
+    } else {
+      setPinFor(name);
+      setScreen("pin");
+    }
+  };
+
+  const onPinSuccess = (token) => {
+    setToken(pinFor, token);
+    finalizeIdentity(pinFor);
+  };
+
+  // currentUser stays null: nothing is saved while training as a guest.
   const skipIdentity = () => {
     saveUser(GUEST);
     setCurrentUser(null);
     setHasChosenIdentity(true);
+    setPinFor(null);
     setScreen("home");
   };
 
-  const launchQueue = (q, minutes) => {
+  // Train now without signing in, without forgetting who this device is.
+  const continueUnsaved = () => {
+    setCurrentUser(null);
+    setPinFor(null);
+    setScreen("home");
+  };
+
+  const signInAgain = () => {
+    setPinFor(currentUser);
+    setScreen("pin");
+  };
+
+  const launchQueue = (q, minutes, type) => {
     const t = Date.now();
     setQueue(q);
+    progressRef.current = [];
+    sessionTypeRef.current = type;
     commit({ index: 0, clock: startClock(q[0].duration, t), done: false });
     setNow(t);
     setInterrupted(false);
@@ -89,20 +144,46 @@ export default function App() {
     const pool = filterByType(EXERCISES, prefs.type);
     const finalExercise =
       prefs.type === "flexibility" ? EXERCISES.find((e) => e.id === FLEXIBILITY_FINALE_ID) : undefined;
-    launchQueue(buildWorkout(prefs.minutes, prefs.random, pool, finalExercise), prefs.minutes);
+    launchQueue(buildWorkout(prefs.minutes, prefs.random, pool, finalExercise), prefs.minutes, prefs.type);
   };
 
   const quickStart = () => {
-    launchQueue(buildQuickStartWorkout(EXERCISES), QUICK_START_MINUTES);
+    launchQueue(buildQuickStartWorkout(EXERCISES), QUICK_START_MINUTES, QUICK_START_TYPE);
   };
 
-  const exerciseCount = queue.filter((q) => q.type === "exercise").length;
+  const creditElapsed = (i, stepClock, t) => {
+    const spent = queue[i].duration * 1000 - remainingMs(stepClock, t);
+    progressRef.current[i] = Math.max(progressRef.current[i] || 0, spent);
+  };
 
-  const completeWorkout = () => {
+  const creditFull = (i) => {
+    progressRef.current[i] = queue[i].duration * 1000;
+  };
+
+  // Records what actually happened: time really spent decides whether the
+  // session is saved, and whether it counts as completed or partial.
+  const finishSession = (reachedEnd) => {
     if (sessionRef.current.done) return;
     sessionRef.current = { ...sessionRef.current, done: true };
-    logWorkout({ userName: currentUser, workoutType, durationMinutes: lastMinutes, exerciseCount });
-    setScreen("done");
+    const summary = summarizeProgress(queue, progressRef.current);
+    const status = classifySession({ reachedEnd, ...summary });
+    if (status !== "none" && currentUser) {
+      enqueueSession({
+        clientId: newClientId(),
+        userName: currentUser,
+        workoutType: sessionTypeRef.current,
+        durationMinutes: lastMinutes,
+        exerciseCount: summary.exerciseSteps,
+        plannedSeconds: summary.plannedSeconds,
+        completedSeconds: summary.completedSeconds,
+        exercisesDone: summary.exercisesDone,
+        status,
+        completedAt: new Date().toISOString(),
+      });
+      sync.flush();
+    }
+    setOutcome({ status, ...summary, plannedMinutes: lastMinutes, saved: Boolean(currentUser) });
+    setScreen(status === "none" && !reachedEnd ? "home" : "done");
   };
 
   // Manual skips/previous start the new step now, keeping the current
@@ -115,12 +196,17 @@ export default function App() {
   };
 
   const goNext = () => {
-    if (sessionRef.current.index + 1 >= queue.length) completeWorkout();
-    else moveTo(sessionRef.current.index + 1);
+    const { index: i, clock: c } = sessionRef.current;
+    creditElapsed(i, c, Date.now());
+    if (i + 1 >= queue.length) finishSession(true);
+    else moveTo(i + 1);
   };
 
   const goPrev = () => {
-    if (sessionRef.current.index > 0) moveTo(sessionRef.current.index - 1);
+    const { index: i, clock: c } = sessionRef.current;
+    if (i === 0) return;
+    creditElapsed(i, c, Date.now());
+    moveTo(i - 1);
   };
 
   const togglePause = () => {
@@ -129,6 +215,29 @@ export default function App() {
     commit({ ...sessionRef.current, clock: isRunning(current) ? pauseClock(current, t) : resumeClock(current, t) });
     setNow(t);
     setInterrupted(false);
+  };
+
+  // Leaving mid-workout: under a minute is simply discarded; more than that
+  // is kept as a partial session (after asking, since it is saved).
+  const quitWorkout = () => {
+    const t = Date.now();
+    const { index: i, clock: c } = sessionRef.current;
+    creditElapsed(i, c, t);
+    const summary = summarizeProgress(queue, progressRef.current);
+    const status = classifySession({ reachedEnd: false, ...summary });
+    if (!currentUser || status === "none") {
+      setScreen("home");
+      return;
+    }
+    const wasRunning = isRunning(c);
+    if (wasRunning) commit({ ...sessionRef.current, clock: pauseClock(c, t) });
+    if (window.confirm("לצאת מהאימון? נשמור את מה שעשיתם כאימון חלקי.")) {
+      finishSession(false);
+    } else if (wasRunning) {
+      const resumeAt = Date.now();
+      commit({ ...sessionRef.current, clock: resumeClock(sessionRef.current.clock, resumeAt) });
+      setNow(resumeAt);
+    }
   };
 
   // Tick 4x a second against the wall clock; stepping through elapsed
@@ -142,8 +251,13 @@ export default function App() {
       if (done) return;
       const result = advanceClock(c, i, durations, t);
       setNow(t);
-      if (result.finished) completeWorkout();
-      else if (result.index !== i) commit({ ...sessionRef.current, index: result.index, clock: result.clock });
+      if (result.finished) {
+        for (let k = i; k < durations.length; k++) creditFull(k);
+        finishSession(true);
+      } else if (result.index !== i) {
+        for (let k = i; k < result.index; k++) creditFull(k);
+        commit({ ...sessionRef.current, index: result.index, clock: result.clock });
+      }
     }, 250);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -165,6 +279,11 @@ export default function App() {
   }, [screen, isPaused]);
 
   const showTabs = screen === "home" || screen === "library" || screen === "history";
+  const syncProps = {
+    syncPending: sync.pending,
+    needsSignIn: Boolean(currentUser) && sync.authRequiredFor === currentUser,
+    onSignIn: signInAgain,
+  };
 
   return (
     <div
@@ -186,6 +305,15 @@ export default function App() {
               onCancel={hasChosenIdentity ? () => setScreen("home") : undefined}
             />
           )}
+          {screen === "pin" && pinFor && (
+            <PinScreen
+              key={pinFor}
+              name={pinFor}
+              onSuccess={onPinSuccess}
+              onBack={() => setScreen("identity")}
+              onContinueUnsaved={continueUnsaved}
+            />
+          )}
           {screen === "home" && (
             <HomeScreen
               prefs={prefs}
@@ -194,10 +322,11 @@ export default function App() {
               onQuickStart={quickStart}
               currentUser={currentUser}
               onSwitchUser={() => setScreen("identity")}
+              {...syncProps}
             />
           )}
           {screen === "library" && <LibraryScreen exercises={EXERCISES} />}
-          {screen === "history" && <HistoryScreen currentUser={currentUser} />}
+          {screen === "history" && <HistoryScreen currentUser={currentUser} {...syncProps} />}
           {screen === "active" && queue.length > 0 && (
             <ActiveScreen
               queue={queue}
@@ -209,11 +338,11 @@ export default function App() {
               onPauseToggle={togglePause}
               onSkip={goNext}
               onPrev={goPrev}
-              onQuit={() => setScreen("home")}
+              onQuit={quitWorkout}
             />
           )}
-          {screen === "done" && (
-            <DoneScreen minutes={lastMinutes} exerciseCount={exerciseCount} onRestart={() => setScreen("home")} />
+          {screen === "done" && outcome && (
+            <DoneScreen outcome={outcome} syncPending={sync.pending} onRestart={() => setScreen("home")} />
           )}
         </main>
         {showTabs && <TabBar active={screen} onChange={setScreen} />}
