@@ -1,30 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { pickBestHebrewVoice } from "./voicePick.js";
+import { cuePattern } from "./cues.js";
 
 const MUTE_STORAGE_KEY = "workout-tts-muted";
-
-// Cloudflare Worker that proxies text-to-speech requests to ElevenLabs
-// (see cloudflare-worker/README.md) — the API key lives only in the
-// Worker's secret storage, never in this bundle. Empty until deployed,
-// in which case speak() just uses the browser's built-in voice below.
-const ELEVENLABS_WORKER_URL = "https://workout-tts-proxy.ori-yakoel.workers.dev";
-
-// Once an ElevenLabs call fails (network error, or the monthly character
-// quota is used up), stop retrying it for a while so every announcement
-// doesn't pay for a slow failed request first — fall straight back to
-// the browser voice until this cools down.
-const ELEVEN_COOLDOWN_KEY = "workout-eleven-unavailable-until";
-const ELEVEN_COOLDOWN_MS = 6 * 60 * 60 * 1000; // 6 hours
-
-function isElevenLabsCoolingDown() {
-  if (typeof window === "undefined") return true;
-  const until = Number(window.localStorage.getItem(ELEVEN_COOLDOWN_KEY) || 0);
-  return Date.now() < until;
-}
-
-function markElevenLabsUnavailable() {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(ELEVEN_COOLDOWN_KEY, String(Date.now() + ELEVEN_COOLDOWN_MS));
-}
+// "voice" = speak Hebrew cues; "beeps" = distinct beep patterns instead
+// (for devices with no working Hebrew voice). Unset until the user has
+// done the voice check once.
+const VOICE_MODE_KEY = "workout-voice-mode";
 
 export function isTTSSupported() {
   return typeof window !== "undefined" && "speechSynthesis" in window;
@@ -40,116 +22,140 @@ export function setTTSMuted(muted) {
   window.localStorage.setItem(MUTE_STORAGE_KEY, muted ? "1" : "0");
 }
 
-let cachedHebrewVoice = null;
+export function getVoiceMode() {
+  if (typeof window === "undefined") return null;
+  const stored = window.localStorage.getItem(VOICE_MODE_KEY);
+  return stored === "voice" || stored === "beeps" ? stored : null;
+}
+
+export function setVoiceMode(mode) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(VOICE_MODE_KEY, mode);
+}
+
+let cachedVoice = null;
 let cacheReady = false;
 
-// iOS lets users download "Enhanced"/"Premium" quality voices per
-// language (Settings → Accessibility → Read & Speak → Voices → Hebrew).
-// When installed, they show up alongside the default compact voice with
-// that word in the name — prefer them when present.
 function pickHebrewVoice() {
   if (!isTTSSupported()) return null;
-  if (cacheReady) return cachedHebrewVoice;
+  if (cacheReady) return cachedVoice;
   const voices = window.speechSynthesis.getVoices();
   if (voices.length === 0) return null; // not loaded yet — try again next call
-
-  const hebrewVoices = voices.filter((v) => v.lang?.toLowerCase().startsWith("he"));
-  const enhanced = hebrewVoices.find((v) => /enhanced|premium/i.test(v.name));
-  cachedHebrewVoice = enhanced || hebrewVoices[0] || null;
+  cachedVoice = pickBestHebrewVoice(voices);
   cacheReady = true;
-  return cachedHebrewVoice;
+  return cachedVoice;
 }
 
 if (isTTSSupported()) {
-  window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.addEventListener("voiceschanged", () => {
     cacheReady = false;
-  };
+  });
 }
 
+// Bumped by every speak()/cancel so a cue still waiting out its short
+// start delay is dropped when something newer (or a pause) supersedes it.
+let currentSpeakToken = 0;
+
 // Some browsers (notably Chrome on Android) drop the reference to a
-// SpeechSynthesisUtterance and silently stop speaking mid-sentence, or
-// never start at all, if nothing else holds onto it — stashing it on
-// window is a cheap guard against that.
-function speakPlainUtterance(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
+// SpeechSynthesisUtterance and silently stop speaking, or never start,
+// if nothing else holds onto it — stashing it on window guards against it.
+function startUtterance(utterance) {
   window.__lastUtterance = utterance;
   window.speechSynthesis.speak(utterance);
 }
 
-function speakWithBrowserVoice(text, token) {
-  if (!isTTSSupported()) return;
-  // Chrome on Android has a known bug where calling speak() synchronously
-  // right after cancel() silently drops the new utterance — a short delay
-  // avoids that race (cancelSpeech() just ran in speak() above).
+// "canceled"/"interrupted" are what a cancel() we issued ourselves looks
+// like — not a real failure, and must never trigger a retry.
+function isOwnCancel(code) {
+  return code === "canceled" || code === "interrupted";
+}
+
+function speakWithBrowserVoice(text, token, handlers = {}) {
+  if (!isTTSSupported()) {
+    handlers.onError?.("unsupported");
+    return;
+  }
+  // Chrome on Android silently drops speak() called synchronously right
+  // after cancel() — a short delay avoids that race.
   setTimeout(() => {
-    if (token !== undefined && token !== currentSpeakToken) return; // superseded
+    if (token !== currentSpeakToken) return;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "he-IL";
     utterance.rate = 0.95; // default 1.0 reads slightly rushed for held-stretch cues
     const voice = pickHebrewVoice();
     if (voice) utterance.voice = voice;
-    utterance.onerror = () => {
-      // Some devices reject this lang/voice pairing outright (e.g. no
-      // Hebrew installed in the device's TTS engine) — retry once with
-      // the engine's own default rather than staying silent.
-      speakPlainUtterance(text);
+    utterance.onstart = () => handlers.onStart?.();
+    utterance.onend = () => handlers.onEnd?.();
+    utterance.onerror = (event) => {
+      if (isOwnCancel(event.error)) return;
+      handlers.onError?.(event.error);
+      // Some devices reject this lang/voice pairing outright — retry once
+      // with the engine's own default rather than staying silent.
+      if (token === currentSpeakToken) startUtterance(new SpeechSynthesisUtterance(text));
     };
-    window.__lastUtterance = utterance;
-    window.speechSynthesis.speak(utterance);
+    startUtterance(utterance);
   }, 60);
 }
 
-let currentElevenAudio = null;
-let currentSpeakToken = 0;
-
-async function speakWithElevenLabs(text, token) {
-  const res = await fetch(ELEVENLABS_WORKER_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
-  if (!res.ok) throw new Error(`elevenlabs proxy failed: ${res.status}`);
-  const blob = await res.blob();
-  if (token !== currentSpeakToken) return; // superseded by a newer call — drop it
-
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  currentElevenAudio = audio;
-  audio.addEventListener("ended", () => URL.revokeObjectURL(url));
-  await audio.play();
-}
-
 // Speaks Hebrew text aloud, replacing anything currently being spoken.
-// `important` opts into ElevenLabs (via the Worker proxy) when it's
-// configured and not cooling down from a recent failure — reserved for
-// the one cue worth spending the tight monthly character quota on (the
-// exercise title when it starts); every other cue (rest previews, the
-// 10-second warning, the left-side label) always uses the browser's
-// free built-in voice. If the ElevenLabs call fails for any reason —
-// network issue, offline, or the monthly quota ran out — this falls
-// back to the browser voice too. Silently does nothing if muted or
-// empty — callers never need to check either condition themselves.
-export function speak(text, { important = false } = {}) {
+// Silently does nothing if muted or empty.
+export function speak(text) {
   if (getTTSMuted() || !text) return;
   cancelSpeech();
-  const token = ++currentSpeakToken;
-
-  if (important && ELEVENLABS_WORKER_URL && !isElevenLabsCoolingDown()) {
-    speakWithElevenLabs(text, token).catch(() => {
-      markElevenLabsUnavailable();
-      if (token === currentSpeakToken) speakWithBrowserVoice(text, token);
-    });
-  } else {
-    speakWithBrowserVoice(text, token);
-  }
+  speakWithBrowserVoice(text, currentSpeakToken);
 }
 
 export function cancelSpeech() {
+  currentSpeakToken += 1;
   if (isTTSSupported()) window.speechSynthesis.cancel();
-  if (currentElevenAudio) {
-    currentElevenAudio.pause();
-    currentElevenAudio = null;
-  }
+}
+
+// Resolves { ok: true } once the engine reports it started speaking, or
+// { ok: false, reason } if it errors or never responds. Whether it was
+// actually audible is for the user to confirm.
+export function testVoice() {
+  return new Promise((resolve) => {
+    cancelSpeech();
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = setTimeout(() => finish({ ok: false, reason: "no-response" }), 4000);
+    speakWithBrowserVoice("שלום, זו בדיקת קול", currentSpeakToken, {
+      onStart: () => finish({ ok: true }),
+      onError: (code) => finish({ ok: false, reason: code || "error" }),
+    });
+  });
+}
+
+// What the device offers, kept current as the browser loads its voice list.
+export function useVoiceStatus() {
+  const read = () => {
+    if (!isTTSSupported()) return { supported: false, loaded: false, hebrewName: null };
+    const voices = window.speechSynthesis.getVoices();
+    return {
+      supported: true,
+      loaded: voices.length > 0,
+      hebrewName: pickBestHebrewVoice(voices)?.name ?? null,
+    };
+  };
+  const [status, setStatus] = useState(read);
+
+  useEffect(() => {
+    if (!isTTSSupported()) return;
+    const update = () => setStatus(read());
+    window.speechSynthesis.addEventListener("voiceschanged", update);
+    const timer = setTimeout(update, 1500);
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", update);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  return status;
 }
 
 let audioCtx = null;
@@ -162,6 +168,21 @@ function getAudioContext() {
   return audioCtx;
 }
 
+function scheduleTone(ctx, freq, offset, duration) {
+  const start = ctx.currentTime + offset;
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.3, start + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+  oscillator.start(start);
+  oscillator.stop(start + duration + 0.01);
+}
+
 // A short countdown beep for the last few seconds of any timed segment,
 // so a transition is audible without having to watch the screen. Tied to
 // the same mute toggle as the voice cues.
@@ -170,18 +191,28 @@ export function playBeep() {
   const ctx = getAudioContext();
   if (!ctx) return;
   if (ctx.state === "suspended") ctx.resume();
+  scheduleTone(ctx, 880, 0, 0.15);
+}
 
-  const oscillator = ctx.createOscillator();
-  const gain = ctx.createGain();
-  oscillator.type = "sine";
-  oscillator.frequency.value = 880;
-  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
-  oscillator.connect(gain);
-  gain.connect(ctx.destination);
-  oscillator.start();
-  oscillator.stop(ctx.currentTime + 0.16);
+export function playCue(kind) {
+  if (getTTSMuted()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  if (ctx.state === "suspended") ctx.resume();
+  for (const [freq, offset, duration] of cuePattern(kind)) scheduleTone(ctx, freq, offset, duration);
+}
+
+// The one entry point for workout cues: speaks the Hebrew text, or — when
+// the device can't speak Hebrew (chosen in the voice check) — plays the
+// matching beep pattern instead. The on-screen text always shows either way.
+export function announce(kind, text) {
+  if (getTTSMuted()) return;
+  if (getVoiceMode() === "beeps") {
+    cancelSpeech();
+    playCue(kind);
+    return;
+  }
+  speak(text);
 }
 
 // Small hook so components can render a mute toggle without each one

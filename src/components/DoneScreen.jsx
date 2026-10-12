@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { RotateCcw } from "lucide-react";
 import { C } from "../theme.js";
-import { speak } from "../lib/tts.js";
+import { announce } from "../lib/tts.js";
 import { doneAnnouncement } from "../lib/announcements.js";
 
 export default function DoneScreen({ minutes, exerciseCount, onRestart }) {
   useEffect(() => {
-    speak(doneAnnouncement());
+    announce("done", doneAnnouncement());
   }, []);
 
   return (

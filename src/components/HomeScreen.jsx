@@ -3,6 +3,7 @@ import DurationTile from "./DurationTile.jsx";
 import NavTabs from "./NavTabs.jsx";
 import TypeSelector from "./TypeSelector.jsx";
 import PlantWidget from "./PlantWidget.jsx";
+import VoiceCheck from "./VoiceCheck.jsx";
 import { Shuffle, BatteryLow } from "lucide-react";
 import { DURATIONS_MINUTES } from "../lib/workoutEngine.js";
 
@@ -58,6 +59,8 @@ export default function HomeScreen({
           ))}
         </div>
       </div>
+
+      <VoiceCheck />
 
       <button
         onClick={() => setRandomOrder(!randomOrder)}

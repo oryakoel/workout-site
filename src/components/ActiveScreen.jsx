@@ -3,7 +3,7 @@ import { Play, Pause, SkipForward, SkipBack, X, Volume2, VolumeX } from "lucide-
 import { C, FONT_MONO } from "../theme.js";
 import { formatTime, SIDE_LABEL } from "../lib/workoutEngine.js";
 import { exerciseAnnouncement, restAnnouncement, prepAnnouncement, tenSecondsLeftAnnouncement } from "../lib/announcements.js";
-import { speak, cancelSpeech, playBeep, useTTSMuted } from "../lib/tts.js";
+import { announce, cancelSpeech, playBeep, useTTSMuted } from "../lib/tts.js";
 import ProgressDots from "./ProgressDots.jsx";
 
 export default function ActiveScreen({
@@ -32,14 +32,11 @@ export default function ActiveScreen({
     announcedTenSecRef.current = null;
     beepedSecondsRef.current = new Set();
     if (item.type === "exercise") {
-      // Only the right-side (or non-bilateral) cue is the "start of a
-      // new exercise" moment — worth the ElevenLabs quota. The left-side
-      // cue is just "צד שמאל", read fine by the free browser voice.
-      speak(exerciseAnnouncement(item.exercise, item.side), { important: item.side !== "left" });
+      announce(item.side === "left" ? "side" : "exercise", exerciseAnnouncement(item.exercise, item.side));
     } else if (item.isPrep) {
-      speak(prepAnnouncement(item.nextExercise, item.nextSide));
+      announce("prep", prepAnnouncement(item.nextExercise, item.nextSide));
     } else {
-      speak(restAnnouncement(item.nextExercise, item.nextSide));
+      announce("rest", restAnnouncement(item.nextExercise, item.nextSide));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index]);
@@ -56,7 +53,7 @@ export default function ActiveScreen({
       announcedTenSecRef.current !== index
     ) {
       announcedTenSecRef.current = index;
-      speak(tenSecondsLeftAnnouncement());
+      announce("tenSeconds", tenSecondsLeftAnnouncement());
     }
   }, [timeLeft, item, index]);
 
