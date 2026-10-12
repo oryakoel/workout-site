@@ -5,10 +5,10 @@
 
 export const PALETTE = {
   skin: "#EFC29B",
-  hair: "#3A2E1A",
-  shirt: "#E8A33D", // C.amber
-  pants: "#7FB0A6", // C.teal
-  outline: "#0F211C", // C.bg
+  hair: "#3B2619",
+  shirt: "#E8905F", // C.accent
+  pants: "#8FC7A9", // C.sage
+  outline: "#0F1A15", // C.bg
 };
 
 const OUTLINE_WIDTH = 4;
@@ -17,7 +17,7 @@ export const VIEWBOX = "0 0 240 200";
 export const FLOOR_Y = 176;
 
 export function Ground({ x1 = 14, x2 = 226 }) {
-  return <line x1={x1} y1={FLOOR_Y} x2={x2} y2={FLOOR_Y} stroke="#2B4B41" strokeWidth="2" strokeDasharray="4 6" />;
+  return <line x1={x1} y1={FLOOR_Y} x2={x2} y2={FLOOR_Y} stroke="#2E4339" strokeWidth="2" strokeDasharray="4 6" />;
 }
 
 export function Capsule({ from, to, width, color }) {

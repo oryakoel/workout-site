@@ -5,11 +5,11 @@
 // (a CSS scaleX(-1) on the wrapping element), not here — one photo per
 // pose is enough.
 export function makePhotoIllustration(src) {
-  return function PhotoIllustration() {
+  return function PhotoIllustration({ alt = "" }) {
     return (
       <img
         src={src}
-        alt=""
+        alt={alt}
         style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
       />
     );

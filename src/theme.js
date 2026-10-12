@@ -1,16 +1,19 @@
-// Shared color palette, carried over from the original prototype.
+// Design tokens. The palette is taken from the exercise illustrations
+// (sage mat, clay leggings, cream backdrop) so the UI and the art feel
+// like one system. theme.test.js guards the contrast of every text pair.
 export const C = {
-  bg: "#0F211C",
-  bgOuter: "#08120F",
-  surface: "#16302A",
-  surfaceAlt: "#1D3B33",
-  line: "#2B4B41",
-  text: "#EDEDE3",
-  textMuted: "#93AC9F",
-  amber: "#E8A33D",
-  amberDim: "#3A2E1A",
-  teal: "#7FB0A6",
-  tealDim: "#1C3733",
+  bgOuter: "#0A110E",
+  bg: "#0F1A15",
+  surface: "#16241E",
+  surfaceAlt: "#1E2F27",
+  line: "#2E4339", // decorative dividers and card borders
+  lineStrong: "#5A7667", // borders of interactive controls (inputs)
+  text: "#F3ECDF",
+  textMuted: "#A9BDB0",
+  accent: "#E8905F", // primary actions, active exercise
+  accentDim: "#3B2619",
+  sage: "#8FC7A9", // rest, secondary, positive
+  sageDim: "#1D3429",
 };
 
 export const FONT_SANS = "Heebo, sans-serif";

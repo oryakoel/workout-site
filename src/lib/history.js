@@ -7,6 +7,18 @@ const CURRENT_USER_KEY = "workout-current-user";
 
 export const PRESET_USERS = ["אור", "כרמל"];
 
+// Saved in place of a name when someone chooses to train without saving,
+// so the app doesn't ask "who's training?" on every launch.
+export const GUEST = "__guest__";
+
+// Who this device last chose to be: { chosen: false } on first launch,
+// otherwise the saved name (null for a guest).
+export function readIdentity() {
+  const saved = getSavedUser();
+  if (!saved) return { chosen: false, user: null };
+  return { chosen: true, user: saved === GUEST ? null : saved };
+}
+
 export function getSavedUser() {
   if (typeof window === "undefined") return null;
   return window.localStorage.getItem(CURRENT_USER_KEY);

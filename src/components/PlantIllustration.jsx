@@ -42,7 +42,7 @@ function Sparkle({ x, y, size }) {
     const a = (Math.PI / 4) * i;
     return `${x + Math.cos(a) * r} ${y + Math.sin(a) * r}`;
   });
-  return <polygon points={p.join(" ")} fill={C.amber} opacity="0.85" />;
+  return <polygon points={p.join(" ")} fill={C.accent} opacity="0.85" />;
 }
 
 export default function PlantIllustration({ streak = 0, everTrained = false, size = "full" }) {
@@ -52,7 +52,7 @@ export default function PlantIllustration({ streak = 0, everTrained = false, siz
     ? { stemHeight: 34, leafPairs: 1, hasBloom: false, petalCount: 0, sparkles: 0 }
     : computeGrowth(streak);
 
-  const plantColor = wilted ? C.textMuted : C.teal;
+  const plantColor = wilted ? C.textMuted : C.sage;
   const stemX = VIEW_W / 2;
   const stemTopX = stemX + (wilted ? 20 : 0);
   const stemTopY = GROUND_Y - growth.stemHeight;
@@ -69,7 +69,7 @@ export default function PlantIllustration({ streak = 0, everTrained = false, siz
 
   const petals = [];
   for (let i = 0; i < growth.petalCount; i++) {
-    petals.push(<Petal key={i} cx={stemTopX} cy={stemTopY} angle={(360 / growth.petalCount) * i} color={C.amber} />);
+    petals.push(<Petal key={i} cx={stemTopX} cy={stemTopY} angle={(360 / growth.petalCount) * i} color={C.accent} />);
   }
 
   const sparkles = [];
@@ -102,7 +102,7 @@ export default function PlantIllustration({ streak = 0, everTrained = false, siz
       )}
 
       {leaves}
-      {growth.hasBloom && <circle cx={stemTopX} cy={stemTopY} r="6" fill={C.amber} opacity="0.9" />}
+      {growth.hasBloom && <circle cx={stemTopX} cy={stemTopY} r="6" fill={C.accent} opacity="0.9" />}
       {petals}
       {sparkles}
     </svg>

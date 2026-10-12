@@ -11,8 +11,8 @@ export default function DoneScreen({ minutes, exerciseCount, onRestart }) {
 
   return (
     <div className="flex flex-col items-center justify-center h-full px-6 text-center gap-6">
-      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: C.amberDim }}>
-        <span className="text-3xl" style={{ color: C.amber }}>
+      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: C.accentDim }}>
+        <span className="text-3xl" style={{ color: C.accent }}>
           ✓
         </span>
       </div>
@@ -27,7 +27,7 @@ export default function DoneScreen({ minutes, exerciseCount, onRestart }) {
       <button
         onClick={onRestart}
         className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium touch-manipulation"
-        style={{ backgroundColor: C.amber, color: C.bg }}
+        style={{ backgroundColor: C.accent, color: C.bg }}
       >
         <RotateCcw size={18} />
         אימון חדש

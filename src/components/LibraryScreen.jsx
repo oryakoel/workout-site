@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronLeft, RefreshCw } from "lucide-react";
 import { C } from "../theme.js";
 import { WORKOUT_TYPES } from "../data/exercises.js";
-import NavTabs from "./NavTabs.jsx";
+import { Chip } from "./ui.jsx";
 
 const FILTERS = [{ id: "all", label: "הכול" }, ...WORKOUT_TYPES];
 
@@ -25,7 +25,7 @@ function ExerciseRow({ exercise, onOpen }) {
           {exercise.muscleGroup}
         </p>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs" style={{ color: C.teal }}>
+          <span className="text-xs" style={{ color: C.sage }}>
             {exercise.defaultDurationSeconds} שנ׳
           </span>
           {exercise.bilateral && (
@@ -36,7 +36,7 @@ function ExerciseRow({ exercise, onOpen }) {
           )}
         </div>
       </div>
-      <ChevronLeft size={20} color={C.textMuted} className="shrink-0" />
+      <ChevronLeft size={20} color={C.textMuted} className="shrink-0" aria-hidden="true" />
     </button>
   );
 }
@@ -54,7 +54,7 @@ function ExerciseDetail({ exercise, onBack }) {
         className="w-full rounded-2xl p-4 mt-4 mx-auto"
         style={{ backgroundColor: C.surface, border: `1px solid ${C.line}`, aspectRatio: "6 / 5", maxWidth: "420px" }}
       >
-        <Illustration />
+        <Illustration alt={exercise.name} />
       </div>
 
       <div className="text-center mt-5">
@@ -67,14 +67,14 @@ function ExerciseDetail({ exercise, onBack }) {
         <div className="flex items-center justify-center gap-3 mt-2">
           <span
             className="px-3 py-1 rounded-full text-xs font-medium"
-            style={{ backgroundColor: C.tealDim, color: C.teal }}
+            style={{ backgroundColor: C.sageDim, color: C.sage }}
           >
             {exercise.defaultDurationSeconds} שניות
           </span>
           {exercise.bilateral && (
             <span
               className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
-              style={{ backgroundColor: C.amberDim, color: C.amber }}
+              style={{ backgroundColor: C.accentDim, color: C.accent }}
             >
               <RefreshCw size={12} />
               ימין ושמאל בנפרד
@@ -86,7 +86,7 @@ function ExerciseDetail({ exercise, onBack }) {
       <ul className="w-full max-w-md mx-auto flex flex-col gap-3 mt-6">
         {exercise.tips.map((tip, i) => (
           <li key={i} className="flex items-start gap-2 text-sm leading-relaxed" style={{ color: C.text }}>
-            <span className="mt-1.5 shrink-0 rounded-full" style={{ width: "5px", height: "5px", backgroundColor: C.amber }} />
+            <span className="mt-1.5 shrink-0 rounded-full" style={{ width: "5px", height: "5px", backgroundColor: C.accent }} />
             {tip}
           </li>
         ))}
@@ -95,7 +95,7 @@ function ExerciseDetail({ exercise, onBack }) {
   );
 }
 
-export default function LibraryScreen({ exercises, onNavigate }) {
+export default function LibraryScreen({ exercises }) {
   const [selectedId, setSelectedId] = useState(null);
   const [filter, setFilter] = useState("all");
   const selected = exercises.find((e) => e.id === selectedId);
@@ -107,11 +107,9 @@ export default function LibraryScreen({ exercises, onNavigate }) {
   const visible = filter === "all" ? exercises : exercises.filter((e) => e.type === filter);
 
   return (
-    <div className="flex flex-col h-full px-6 pt-6 pb-8 gap-6">
-      <NavTabs active="library" onChange={onNavigate} />
-
+    <div className="flex flex-col h-full px-5 pt-6 pb-4 gap-5">
       <div className="shrink-0">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: C.text }}>
+        <h1 className="text-3xl font-bold mb-1" style={{ color: C.text }}>
           ספריית תרגילים
         </h1>
         <p className="text-base" style={{ color: C.textMuted }}>
@@ -119,24 +117,12 @@ export default function LibraryScreen({ exercises, onNavigate }) {
         </p>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 shrink-0">
-        {FILTERS.map((f) => {
-          const isActive = filter === f.id;
-          return (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className="shrink-0 px-4 py-2 rounded-full text-sm font-medium touch-manipulation whitespace-nowrap"
-              style={{
-                backgroundColor: isActive ? C.tealDim : C.surface,
-                border: `1px solid ${isActive ? C.teal : C.line}`,
-                color: isActive ? C.teal : C.textMuted,
-              }}
-            >
-              {f.label}
-            </button>
-          );
-        })}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 shrink-0" role="group" aria-label="סינון לפי סוג">
+        {FILTERS.map((f) => (
+          <Chip key={f.id} selected={filter === f.id} onClick={() => setFilter(f.id)} className="shrink-0">
+            {f.label}
+          </Chip>
+        ))}
       </div>
 
       <div className="flex flex-col gap-3 overflow-y-auto flex-1 min-h-0">

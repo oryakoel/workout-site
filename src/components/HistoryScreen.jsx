@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { C } from "../theme.js";
 import { WORKOUT_TYPES } from "../data/exercises.js";
 import { fetchHistory, deleteWorkoutEntry } from "../lib/history.js";
-import NavTabs from "./NavTabs.jsx";
+import { Chip } from "./ui.jsx";
 import PlantWidget from "./PlantWidget.jsx";
 import { Trash2 } from "lucide-react";
 
@@ -14,7 +14,7 @@ function formatDate(isoString) {
   return date.toLocaleDateString("he-IL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export default function HistoryScreen({ onNavigate, currentUser }) {
+export default function HistoryScreen({ currentUser }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userFilter, setUserFilter] = useState("all");
@@ -42,9 +42,7 @@ export default function HistoryScreen({ onNavigate, currentUser }) {
   };
 
   return (
-    <div className="flex flex-col h-full px-6 pt-6 pb-8 gap-6 overflow-y-auto">
-      <NavTabs active="history" onChange={onNavigate} />
-
+    <div className="flex flex-col h-full px-5 pt-6 pb-6 gap-6 overflow-y-auto">
       <div>
         <h1 className="text-3xl font-bold mb-2" style={{ color: C.text }}>
           היסטוריית אימונים
@@ -54,24 +52,12 @@ export default function HistoryScreen({ onNavigate, currentUser }) {
       {currentUser && <PlantWidget userName={currentUser} variant="full" />}
 
       {users.length > 1 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          {["all", ...users].map((u) => {
-            const isActive = userFilter === u;
-            return (
-              <button
-                key={u}
-                onClick={() => setUserFilter(u)}
-                className="py-2 px-4 rounded-full text-sm font-medium touch-manipulation"
-                style={{
-                  backgroundColor: isActive ? C.tealDim : C.surface,
-                  border: `1px solid ${isActive ? C.teal : C.line}`,
-                  color: isActive ? C.teal : C.textMuted,
-                }}
-              >
-                {u === "all" ? "הכל" : u}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2 flex-wrap" role="group" aria-label="סינון לפי משתמש">
+          {["all", ...users].map((u) => (
+            <Chip key={u} selected={userFilter === u} onClick={() => setUserFilter(u)}>
+              {u === "all" ? "הכל" : u}
+            </Chip>
+          ))}
         </div>
       )}
 

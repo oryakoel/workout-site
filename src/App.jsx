@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { C } from "./theme.js";
 import { startClock, pauseClock, resumeClock, isRunning, secondsLeft, advanceClock } from "./lib/sessionClock.js";
 import { useWakeLock } from "./lib/wakeLock.js";
-import { EXERCISES } from "./data/exercises.js";
+import { EXERCISES, WORKOUT_TYPES } from "./data/exercises.js";
 import {
   buildWorkout,
   buildQuickStartWorkout,
   filterByType,
   QUICK_START_MINUTES,
   FLEXIBILITY_FINALE_ID,
+  DURATIONS_MINUTES,
 } from "./lib/workoutEngine.js";
 import HomeScreen from "./components/HomeScreen.jsx";
 import LibraryScreen from "./components/LibraryScreen.jsx";
@@ -16,13 +17,21 @@ import ActiveScreen from "./components/ActiveScreen.jsx";
 import DoneScreen from "./components/DoneScreen.jsx";
 import IdentityScreen from "./components/IdentityScreen.jsx";
 import HistoryScreen from "./components/HistoryScreen.jsx";
-import { saveUser, logWorkout } from "./lib/history.js";
+import TabBar from "./components/TabBar.jsx";
+import { saveUser, logWorkout, readIdentity, GUEST } from "./lib/history.js";
+import { loadPrefs, savePrefs } from "./lib/prefs.js";
 
 export default function App() {
-  const [screen, setScreen] = useState("identity");
-  const [currentUser, setCurrentUser] = useState(null);
-  const [randomOrder, setRandomOrder] = useState(false);
-  const [workoutType, setWorkoutType] = useState("auto");
+  // This device remembers who it last was, so the app opens straight to
+  // Home; tapping the name there brings the picker back.
+  const [identity] = useState(readIdentity);
+  const [hasChosenIdentity, setHasChosenIdentity] = useState(identity.chosen);
+  const [screen, setScreen] = useState(identity.chosen ? "home" : "identity");
+  const [currentUser, setCurrentUser] = useState(identity.user);
+  const [prefs, setPrefs] = useState(() =>
+    loadPrefs({ types: ["auto", ...WORKOUT_TYPES.map((t) => t.id)], minutes: DURATIONS_MINUTES }),
+  );
+  const workoutType = prefs.type;
   const [queue, setQueue] = useState([]);
   const [lastMinutes, setLastMinutes] = useState(10);
 
@@ -48,12 +57,18 @@ export default function App() {
   const chooseIdentity = (name) => {
     saveUser(name);
     setCurrentUser(name);
+    setHasChosenIdentity(true);
     setScreen("home");
   };
 
   // currentUser stays null — logWorkout already no-ops without a
-  // userName, so nothing gets saved for the rest of this session.
-  const skipIdentity = () => setScreen("home");
+  // userName, so nothing gets saved while training as a guest.
+  const skipIdentity = () => {
+    saveUser(GUEST);
+    setCurrentUser(null);
+    setHasChosenIdentity(true);
+    setScreen("home");
+  };
 
   const launchQueue = (q, minutes) => {
     const t = Date.now();
@@ -65,11 +80,16 @@ export default function App() {
     setScreen("active");
   };
 
-  const startWorkout = (minutes) => {
-    const pool = filterByType(EXERCISES, workoutType);
+  const changePrefs = (next) => {
+    setPrefs(next);
+    savePrefs(next);
+  };
+
+  const startWorkout = () => {
+    const pool = filterByType(EXERCISES, prefs.type);
     const finalExercise =
-      workoutType === "flexibility" ? EXERCISES.find((e) => e.id === FLEXIBILITY_FINALE_ID) : undefined;
-    launchQueue(buildWorkout(minutes, randomOrder, pool, finalExercise), minutes);
+      prefs.type === "flexibility" ? EXERCISES.find((e) => e.id === FLEXIBILITY_FINALE_ID) : undefined;
+    launchQueue(buildWorkout(prefs.minutes, prefs.random, pool, finalExercise), prefs.minutes);
   };
 
   const quickStart = () => {
@@ -144,6 +164,8 @@ export default function App() {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [screen, isPaused]);
 
+  const showTabs = screen === "home" || screen === "library" || screen === "history";
+
   return (
     <div
       dir="rtl"
@@ -155,38 +177,46 @@ export default function App() {
         className="w-full h-full flex flex-col"
         style={{ backgroundColor: C.bg, maxWidth: "580px" }}
       >
-        {screen === "identity" && <IdentityScreen onSelect={chooseIdentity} onSkip={skipIdentity} />}
-        {screen === "home" && (
-          <HomeScreen
-            onStart={startWorkout}
-            onQuickStart={quickStart}
-            randomOrder={randomOrder}
-            setRandomOrder={setRandomOrder}
-            workoutType={workoutType}
-            setWorkoutType={setWorkoutType}
-            onNavigate={setScreen}
-            currentUser={currentUser}
-          />
-        )}
-        {screen === "library" && <LibraryScreen exercises={EXERCISES} onNavigate={setScreen} />}
-        {screen === "history" && <HistoryScreen onNavigate={setScreen} currentUser={currentUser} />}
-        {screen === "active" && queue.length > 0 && (
-          <ActiveScreen
-            queue={queue}
-            index={index}
-            timeLeft={timeLeft}
-            isPaused={isPaused}
-            interrupted={interrupted}
-            wakeLockStatus={wakeLockStatus}
-            onPauseToggle={togglePause}
-            onSkip={goNext}
-            onPrev={goPrev}
-            onQuit={() => setScreen("home")}
-          />
-        )}
-        {screen === "done" && (
-          <DoneScreen minutes={lastMinutes} exerciseCount={exerciseCount} onRestart={() => setScreen("home")} />
-        )}
+        <main className="flex-1 min-h-0">
+          {screen === "identity" && (
+            <IdentityScreen
+              current={currentUser}
+              onSelect={chooseIdentity}
+              onSkip={skipIdentity}
+              onCancel={hasChosenIdentity ? () => setScreen("home") : undefined}
+            />
+          )}
+          {screen === "home" && (
+            <HomeScreen
+              prefs={prefs}
+              onPrefsChange={changePrefs}
+              onStart={startWorkout}
+              onQuickStart={quickStart}
+              currentUser={currentUser}
+              onSwitchUser={() => setScreen("identity")}
+            />
+          )}
+          {screen === "library" && <LibraryScreen exercises={EXERCISES} />}
+          {screen === "history" && <HistoryScreen currentUser={currentUser} />}
+          {screen === "active" && queue.length > 0 && (
+            <ActiveScreen
+              queue={queue}
+              index={index}
+              timeLeft={timeLeft}
+              isPaused={isPaused}
+              interrupted={interrupted}
+              wakeLockStatus={wakeLockStatus}
+              onPauseToggle={togglePause}
+              onSkip={goNext}
+              onPrev={goPrev}
+              onQuit={() => setScreen("home")}
+            />
+          )}
+          {screen === "done" && (
+            <DoneScreen minutes={lastMinutes} exerciseCount={exerciseCount} onRestart={() => setScreen("home")} />
+          )}
+        </main>
+        {showTabs && <TabBar active={screen} onChange={setScreen} />}
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ export default function VoiceCheck() {
   return (
     <div className="rounded-xl p-4 flex flex-col gap-3" style={{ backgroundColor: C.surface, border: `1px solid ${C.line}` }}>
       <div className="flex items-center gap-2">
-        <Volume2 size={18} color={C.teal} />
+        <Volume2 size={18} color={C.sage} />
         <span className="font-medium" style={{ color: C.text }}>
           בדיקת קול
         </span>
@@ -67,7 +67,7 @@ export default function VoiceCheck() {
             onClick={runTest}
             disabled={phase === "testing"}
             className="flex-1 py-3 rounded-xl font-medium touch-manipulation disabled:opacity-60"
-            style={{ backgroundColor: C.amber, color: C.bg }}
+            style={{ backgroundColor: C.accent, color: C.bg }}
           >
             {phase === "testing" ? "משמיע..." : "השמעת בדיקה"}
           </button>
@@ -96,7 +96,7 @@ export default function VoiceCheck() {
             <button
               onClick={() => confirm("voice")}
               className="flex-1 py-3 rounded-xl font-medium touch-manipulation"
-              style={{ backgroundColor: C.tealDim, border: `1px solid ${C.teal}`, color: C.teal }}
+              style={{ backgroundColor: C.sageDim, border: `1px solid ${C.sage}`, color: C.sage }}
             >
               כן, שמעתי
             </button>
@@ -123,7 +123,7 @@ export default function VoiceCheck() {
             <button
               onClick={() => confirm("beeps")}
               className="flex-1 py-3 rounded-xl font-medium touch-manipulation"
-              style={{ backgroundColor: C.amber, color: C.bg }}
+              style={{ backgroundColor: C.accent, color: C.bg }}
             >
               המשך עם צפצופים
             </button>

@@ -30,8 +30,8 @@ export default defineConfig({
         scope: BASE_PATH,
         display: 'standalone',
         orientation: 'any',
-        background_color: '#08120F',
-        theme_color: '#0F211C',
+        background_color: '#0A110E',
+        theme_color: '#0F1A15',
         icons: [
           { src: `${BASE_PATH}icons/icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: `${BASE_PATH}icons/icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any' },
