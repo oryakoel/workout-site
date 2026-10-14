@@ -21,7 +21,18 @@ import {
   DURATIONS_MINUTES,
 } from "./lib/workoutEngine.js";
 import { planPool } from "./lib/sessionPlan.js";
-import { planFromQueue, queueFromPlan, swapItem } from "./lib/planEdit.js";
+import { planFromQueue, planSeconds, queueFromPlan, swapItem } from "./lib/planEdit.js";
+import {
+  deleteRemoteRoutine,
+  loadState as loadRoutineState,
+  planFromRoutine,
+  pushRoutine,
+  removeRoutine,
+  routineFromPlan,
+  saveState as saveRoutineState,
+  syncRoutines,
+  upsertRoutine,
+} from "./lib/routines.js";
 import HomeScreen from "./components/HomeScreen.jsx";
 import LibraryScreen from "./components/LibraryScreen.jsx";
 import PreviewScreen from "./components/PreviewScreen.jsx";
@@ -42,6 +53,8 @@ import { summarizeProgress, classifySession } from "./lib/sessionOutcome.js";
 import { loadPrefs, savePrefs } from "./lib/prefs.js";
 import { commitProfile, loadProfile, newProfile, skippedProfile, syncProfile } from "./lib/profile.js";
 import { loadLastUsed, recordUsed } from "./lib/exerciseHistory.js";
+
+const KNOWN_IDS = new Set(EXERCISES.map((e) => e.id));
 
 export default function App() {
   // This device remembers who it last was, so the app opens straight to
@@ -68,6 +81,10 @@ export default function App() {
   // What the quiz learned about this person; null until they've answered or
   // skipped it. Tied to whoever is signed in (guests have their own).
   const [profile, setProfile] = useState(() => loadProfile(boot.identity.user));
+  // Saved routines of whoever is signed in (guests keep theirs on this device).
+  const [routineState, setRoutineState] = useState(() => loadRoutineState(boot.identity.user, KNOWN_IDS));
+  const [routinesNotice, setRoutinesNotice] = useState(null);
+  const routinesUserRef = useRef(boot.identity.user);
   const [quizEditing, setQuizEditing] = useState(false);
   const [launchNotice, setLaunchNotice] = useState(null);
   // The signed-in person's own sessions drive the week card and the plant.
@@ -129,12 +146,29 @@ export default function App() {
     return result;
   };
 
+  // Shows this person's saved routines right away, then brings them up to
+  // date with the server.
+  const refreshRoutines = (name) => {
+    routinesUserRef.current = name;
+    setRoutineState(loadRoutineState(name, KNOWN_IDS));
+    setRoutinesNotice(null);
+    syncRoutines(name, name ? getToken(name) : null, KNOWN_IDS).then((next) => {
+      if (routinesUserRef.current === name) setRoutineState(next);
+    });
+  };
+
+  const commitRoutines = (next) => {
+    setRoutineState(next);
+    saveRoutineState(currentUser, next);
+  };
+
   const finalizeIdentity = async (name) => {
     saveUser(name);
     setCurrentUser(name);
     setHasChosenIdentity(true);
     setPinFor(null);
     sync.flush();
+    refreshRoutines(name);
     const local = loadProfile(name);
     setProfile(local);
     if (local) {
@@ -169,6 +203,7 @@ export default function App() {
     saveUser(GUEST);
     setCurrentUser(null);
     setProfile(loadProfile(null));
+    refreshRoutines(null);
     setHasChosenIdentity(true);
     setPinFor(null);
     setScreen("home");
@@ -178,6 +213,7 @@ export default function App() {
   const continueUnsaved = () => {
     setCurrentUser(null);
     setProfile(loadProfile(null));
+    refreshRoutines(null);
     setPinFor(null);
     setScreen("home");
   };
@@ -245,6 +281,8 @@ export default function App() {
       minutes: prefs.minutes,
       type: prefs.goal ? `goal-${prefs.goal}` : prefs.type,
       preferred: plan.pool,
+      routine: null,
+      rev: Date.now(),
     });
     setScreen("preview");
   };
@@ -261,6 +299,46 @@ export default function App() {
         }),
       },
     );
+
+  const saveDraftAsRoutine = (name) => {
+    if (!draft) return;
+    // Keeping the name of the routine this came from updates it; a new name
+    // saves a separate routine.
+    const id = draft.routine && draft.routine.name === name ? draft.routine.id : newClientId();
+    const routine = routineFromPlan(id, name, draft.items);
+    commitRoutines(upsertRoutine(routineState, routine));
+    setDraft((d) => d && { ...d, routine: { id, name } });
+    pushRoutine(currentUser ? getToken(currentUser) : null, routine);
+  };
+
+  const deleteRoutine = (id) => {
+    commitRoutines(removeRoutine(routineState, id));
+    setRoutinesNotice(null);
+    deleteRemoteRoutine(currentUser ? getToken(currentUser) : null, id);
+  };
+
+  const openRoutine = (routine) => {
+    const { items, removed } = planFromRoutine(routine, EXERCISES, EXERCISE_META, profile?.sensitive ?? []);
+    if (items.length === 0) {
+      setRoutinesNotice(`בסדרה "${routine.name}" כל התרגילים מעמיסים על מה שביקשתם לחסוך, ולכן לא פתחנו אותה.`);
+      return;
+    }
+    setRoutinesNotice(null);
+    setLaunchNotice(
+      removed > 0
+        ? `הוצאנו ${removed} ${removed === 1 ? "תרגיל" : "תרגילים"} מהסדרה, כי הם מעמיסים על מה שביקשתם לחסוך.`
+        : null,
+    );
+    setDraft({
+      items,
+      minutes: Math.max(1, Math.round(planSeconds(items) / 60)),
+      type: "routine",
+      preferred: [],
+      routine: { id: routine.id, name: routine.name },
+      rev: Date.now(),
+    });
+    setScreen("preview");
+  };
 
   const startDraft = () => {
     if (!draft || draft.items.length === 0) return;
@@ -422,6 +500,7 @@ export default function App() {
     const name = boot.identity.user;
     if (!name || !getToken(name)) return;
     pullProfile(name);
+    refreshRoutines(name);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -498,16 +577,23 @@ export default function App() {
               profile={profile}
               onOpenQuiz={openQuiz}
               onDismissInvite={skipQuiz}
+              routines={routineState.routines}
+              routinesNotice={routinesNotice}
+              onOpenRoutine={openRoutine}
+              onDeleteRoutine={deleteRoutine}
               {...syncProps}
             />
           )}
           {screen === "preview" && draft && (
             <PreviewScreen
+              key={draft.rev}
               items={draft.items}
               notice={launchNotice}
+              routineName={draft.routine?.name}
               onChange={(items) => setDraft((d) => d && { ...d, items })}
               onSwap={swapDraftItem}
-              onRebuild={startWorkout}
+              onRebuild={draft.routine ? undefined : startWorkout}
+              onSave={saveDraftAsRoutine}
               onStart={startDraft}
               onBack={() => setScreen("home")}
             />

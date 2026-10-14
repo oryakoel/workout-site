@@ -1,4 +1,5 @@
-import { ArrowDown, ArrowLeft, ArrowUp, Minus, Play, Plus, RefreshCw, Shuffle, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ArrowDown, ArrowLeft, ArrowUp, BookmarkPlus, Minus, Play, Plus, RefreshCw, Shuffle, Trash2 } from "lucide-react";
 import { C, FONT_MONO } from "../theme.js";
 import {
   adjustDuration,
@@ -10,6 +11,7 @@ import {
   removeItem,
 } from "../lib/planEdit.js";
 import { Button } from "./ui.jsx";
+import { MAX_NAME_LENGTH } from "../lib/routines.js";
 
 function IconButton({ label, onClick, disabled, children }) {
   return (
@@ -27,7 +29,10 @@ function IconButton({ label, onClick, disabled, children }) {
 
 // A look at the session before it starts: the person can reorder, retime,
 // swap or drop exercises. Nothing here is required; "start" works as is.
-export default function PreviewScreen({ items, notice, onChange, onSwap, onRebuild, onStart, onBack }) {
+export default function PreviewScreen({ items, notice, routineName, onChange, onSwap, onRebuild, onSave, onStart, onBack }) {
+  const [saving, setSaving] = useState(false);
+  const [name, setName] = useState(routineName ?? "");
+  const [savedAs, setSavedAs] = useState(null);
   const minutes = Math.max(1, Math.round(planSeconds(items) / 60));
 
   return (
@@ -129,12 +134,61 @@ export default function PreviewScreen({ items, notice, onChange, onSwap, onRebui
             );
           })}
         </ol>
+
+        <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ backgroundColor: C.surface, border: `1px solid ${C.line}` }}>
+          {saving ? (
+            <form
+              className="flex flex-col gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const clean = name.trim();
+                if (!clean) return;
+                onSave(clean);
+                setSavedAs(clean);
+                setSaving(false);
+              }}
+            >
+              <label htmlFor="routine-name" className="text-sm font-medium" style={{ color: C.textMuted }}>
+                שם הסדרה
+              </label>
+              <input
+                id="routine-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={MAX_NAME_LENGTH}
+                autoFocus
+                placeholder="למשל: בוקר קצר"
+                className="h-12 rounded-xl px-4 text-base"
+                style={{ backgroundColor: C.surfaceAlt, border: `1px solid ${C.lineStrong}`, color: C.text }}
+              />
+              <div className="flex gap-2">
+                <Button type="submit" size="md" className="flex-1" disabled={!name.trim()}>
+                  שמירה
+                </Button>
+                <Button type="button" size="md" variant="quiet" onClick={() => setSaving(false)}>
+                  ביטול
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <p role="status" className="text-sm" style={{ color: savedAs ? C.sage : C.textMuted }}>
+                {savedAs ? `נשמר כ"${savedAs}". תמצאו אותו בדף הבית.` : "אהבתם? אפשר לשמור את האימון הזה לפעם הבאה."}
+              </p>
+              <Button size="md" variant="secondary" icon={BookmarkPlus} className="shrink-0" onClick={() => setSaving(true)}>
+                {savedAs ? "שמירה שוב" : "שמירה כסדרה"}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-3 px-5 py-4 shrink-0" style={{ borderTop: `1px solid ${C.line}` }}>
-        <Button variant="secondary" icon={Shuffle} onClick={onRebuild} aria-label="בניית אימון חדש">
-          אחר
-        </Button>
+        {onRebuild && (
+          <Button variant="secondary" icon={Shuffle} onClick={onRebuild} aria-label="בניית אימון חדש">
+            אחר
+          </Button>
+        )}
         <Button className="flex-1" icon={Play} onClick={onStart}>
           התחלה
         </Button>

@@ -11,6 +11,7 @@ import { Trash2 } from "lucide-react";
 
 const TYPE_LABELS = Object.fromEntries(WORKOUT_TYPES.map((t) => [t.id, t.label]));
 TYPE_LABELS.auto = "תבחר לי";
+TYPE_LABELS.routine = "סדרה שמורה";
 for (const [id, label] of Object.entries(GOAL_LABELS)) TYPE_LABELS[`goal-${id}`] = label;
 
 function formatDate(isoString) {

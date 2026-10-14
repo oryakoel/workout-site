@@ -4,6 +4,7 @@ import { DURATIONS_MINUTES } from "../lib/workoutEngine.js";
 import { WORKOUT_TYPES } from "../data/exercises.js";
 import { GOAL_LABELS, LOAD_LABELS } from "../data/exerciseMeta.js";
 import { Avatar, Button, Card, Chip, SectionLabel } from "./ui.jsx";
+import RoutinesCard from "./RoutinesCard.jsx";
 import WeekCard from "./WeekCard.jsx";
 import VoiceCheck from "./VoiceCheck.jsx";
 import SyncNotice from "./SyncNotice.jsx";
@@ -26,6 +27,10 @@ export default function HomeScreen({
   profile,
   onOpenQuiz,
   onDismissInvite,
+  routines,
+  routinesNotice,
+  onOpenRoutine,
+  onDeleteRoutine,
 }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto px-5 pt-6 pb-6 gap-6">
@@ -205,6 +210,10 @@ export default function HomeScreen({
           </div>
         )}
       </Card>
+
+      {(routines.length > 0 || routinesNotice) && (
+        <RoutinesCard routines={routines} onOpen={onOpenRoutine} onDelete={onDeleteRoutine} notice={routinesNotice} />
+      )}
 
       <button
         onClick={onQuickStart}
