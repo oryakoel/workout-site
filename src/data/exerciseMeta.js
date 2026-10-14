@@ -79,7 +79,7 @@ const TABLE = {
   // ----- strength (handstand prep) -----
   plank: ["work", 2, "plank", ["core", "shoulders"], ["wrists", "shoulders"], ["handstand"]],
   "forearm-plank": ["work", 2, "plank", ["core", "shoulders"], ["shoulders"], ["handstand"]],
-  bridge: ["work", 1, "lying", ["glutes", "lower-back"], [], ["back", "sitting", "running"]],
+  bridge: ["work", 1, "lying", ["glutes", "lower-back"], ["lower-back"], ["back", "sitting", "running"]],
   "dolphin-pushup": ["work", 3, "plank", ["shoulders", "arms", "core"], ["shoulders", "wrists"], ["handstand"]],
   "push-up-t-rotation": ["work", 3, "plank", ["chest", "core", "shoulders"], ["wrists", "shoulders"], ["handstand"]],
   "pike-shoulder-taps": ["work", 3, "plank", ["shoulders", "core"], ["wrists", "shoulders"], ["handstand"]],
