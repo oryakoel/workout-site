@@ -21,8 +21,10 @@ import {
   DURATIONS_MINUTES,
 } from "./lib/workoutEngine.js";
 import { planPool } from "./lib/sessionPlan.js";
+import { planFromQueue, queueFromPlan, swapItem } from "./lib/planEdit.js";
 import HomeScreen from "./components/HomeScreen.jsx";
 import LibraryScreen from "./components/LibraryScreen.jsx";
+import PreviewScreen from "./components/PreviewScreen.jsx";
 import ActiveScreen from "./components/ActiveScreen.jsx";
 import DoneScreen from "./components/DoneScreen.jsx";
 import IdentityScreen from "./components/IdentityScreen.jsx";
@@ -76,6 +78,8 @@ export default function App() {
     [mine.entries, mine.loadedAt, prefs.weeklyGoal],
   );
   const [queue, setQueue] = useState([]);
+  // The workout being looked at before it starts (and editable until then).
+  const [draft, setDraft] = useState(null);
   const [lastMinutes, setLastMinutes] = useState(10);
   const [outcome, setOutcome] = useState(null);
   const sessionTypeRef = useRef("auto");
@@ -236,7 +240,31 @@ export default function App() {
     setLaunchNotice(
       plan.widened ? "הסוג שבחרתם כמעט כולו מעמיס על מה שביקשתם לחסוך, אז שילבנו תרגילים מסוגים אחרים." : null,
     );
-    launchQueue(built, prefs.minutes, prefs.goal ? `goal-${prefs.goal}` : prefs.type);
+    setDraft({
+      items: planFromQueue(built),
+      minutes: prefs.minutes,
+      type: prefs.goal ? `goal-${prefs.goal}` : prefs.type,
+      preferred: plan.pool,
+    });
+    setScreen("preview");
+  };
+
+  const swapDraftItem = (i) =>
+    setDraft((d) =>
+      d && {
+        ...d,
+        items: swapItem(d.items, i, {
+          exercises: EXERCISES,
+          meta: EXERCISE_META,
+          avoidLoads: profile?.sensitive ?? [],
+          preferred: d.preferred,
+        }),
+      },
+    );
+
+  const startDraft = () => {
+    if (!draft || draft.items.length === 0) return;
+    launchQueue(queueFromPlan(draft.items), draft.minutes, draft.type);
   };
 
   const quickStart = () => {
@@ -471,6 +499,17 @@ export default function App() {
               onOpenQuiz={openQuiz}
               onDismissInvite={skipQuiz}
               {...syncProps}
+            />
+          )}
+          {screen === "preview" && draft && (
+            <PreviewScreen
+              items={draft.items}
+              notice={launchNotice}
+              onChange={(items) => setDraft((d) => d && { ...d, items })}
+              onSwap={swapDraftItem}
+              onRebuild={startWorkout}
+              onStart={startDraft}
+              onBack={() => setScreen("home")}
             />
           )}
           {screen === "library" && <LibraryScreen exercises={EXERCISES} />}
