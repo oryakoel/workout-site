@@ -15,12 +15,21 @@ export function recencyWeight(lastUsedMs, now) {
   return 0.25 + 2.75 * (1 - Math.exp(-days / 7));
 }
 
+// How much more likely an exercise is to be picked when it works a region
+// the person asked to focus on. A nudge, not a rule: variety still wins.
+const FOCUS_BOOST = 1.8;
+
+function focusMultiplier(exercise, meta, focusAreas) {
+  if (!focusAreas || focusAreas.length === 0) return 1;
+  return (meta[exercise.id]?.areas ?? []).some((a) => focusAreas.includes(a)) ? FOCUS_BOOST : 1;
+}
+
 // A weighted random order: heavier items tend to come first, but any order
 // is possible (Efraimidis-Spirakis sampling).
-export function weightedOrder(pool, { lastUsed = {}, now = Date.now(), rng = Math.random } = {}) {
+export function weightedOrder(pool, { lastUsed = {}, now = Date.now(), rng = Math.random, meta = {}, focusAreas = [] } = {}) {
   return pool
     .map((exercise) => {
-      const weight = recencyWeight(lastUsed[exercise.id], now);
+      const weight = recencyWeight(lastUsed[exercise.id], now) * focusMultiplier(exercise, meta, focusAreas);
       return { exercise, key: Math.pow(Math.max(rng(), 1e-9), 1 / weight) };
     })
     .sort((a, b) => b.key - a.key)
@@ -61,10 +70,10 @@ export function orderForFlow(items, meta = {}, rng = Math.random) {
   return sorted;
 }
 
-// Drops exercises that stress a joint the person wants to protect, but never
-// returns an empty pool: a workout with a few such moves beats none at all.
+// Drops every exercise that stresses a joint the person wants to protect.
+// Strict on purpose: it may return an empty list, and the caller then widens
+// the choice (to other kinds of exercise) instead of quietly ignoring it.
 export function withoutLoads(pool, meta, avoidLoads) {
   if (!avoidLoads || avoidLoads.length === 0) return pool;
-  const safe = pool.filter((e) => !(meta[e.id]?.load ?? []).some((l) => avoidLoads.includes(l)));
-  return safe.length > 0 ? safe : pool;
+  return pool.filter((e) => !(meta[e.id]?.load ?? []).some((l) => avoidLoads.includes(l)));
 }

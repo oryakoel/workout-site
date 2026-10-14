@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { C } from "../theme.js";
 import { WORKOUT_TYPES } from "../data/exercises.js";
+import { GOAL_LABELS } from "../data/exerciseMeta.js";
 import { fetchHistory, deleteWorkoutEntry } from "../lib/history.js";
 import { getAuthStatus, getToken } from "../lib/auth.js";
 import { Chip } from "./ui.jsx";
@@ -10,6 +11,7 @@ import { Trash2 } from "lucide-react";
 
 const TYPE_LABELS = Object.fromEntries(WORKOUT_TYPES.map((t) => [t.id, t.label]));
 TYPE_LABELS.auto = "תבחר לי";
+for (const [id, label] of Object.entries(GOAL_LABELS)) TYPE_LABELS[`goal-${id}`] = label;
 
 function formatDate(isoString) {
   const date = new Date(isoString);

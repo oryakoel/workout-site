@@ -3,6 +3,7 @@ import {
   buildQuickStartWorkout,
   buildWorkout,
   filterByType,
+  poolForGoal,
   PREP_SECONDS,
   REST_BETWEEN_SIDES_SECONDS,
   REST_SECONDS,
@@ -201,10 +202,36 @@ describe("protecting sensitive areas", () => {
     }
   });
 
-  it("falls back to the full pool rather than building an empty workout", () => {
+  it("builds nothing when every exercise stresses a protected joint, leaving the caller to widen the choice", () => {
     const allLoaded = [ex("x"), ex("y")];
     const mm = { x: m("work", 2, "plank", ["core"], ["wrists"]), y: m("work", 2, "plank", ["core"], ["wrists"]) };
-    expect(buildWorkout(1, false, allLoaded, undefined, { meta: mm, avoidLoads: ["wrists"] }).length).toBeGreaterThan(0);
+    expect(buildWorkout(1, false, allLoaded, undefined, { meta: mm, avoidLoads: ["wrists"] })).toEqual([]);
+  });
+});
+
+describe("focus areas", () => {
+  it("nudge the draw toward the regions the person asked for, without excluding the rest", () => {
+    const focus = ["core"]; // plank-a is the only core exercise in the test pool
+    let withFocus = 0;
+    let without = 0;
+    const runs = 120;
+    for (let seed = 1; seed <= runs; seed++) {
+      const a = exerciseIds(buildWorkout(1, false, exercises, undefined, { meta, focusAreas: focus, rng: seeded(seed) }));
+      const b = exerciseIds(buildWorkout(1, false, exercises, undefined, { meta, rng: seeded(seed) }));
+      if (a.includes("plank-a")) withFocus += 1;
+      if (b.includes("plank-a")) without += 1;
+    }
+    expect(withFocus).toBeGreaterThan(without);
+    expect(withFocus).toBeLessThan(runs);
+  });
+});
+
+describe("goal pools", () => {
+  it("collects the exercises tagged for a goal", () => {
+    const tagged = { a: { goals: ["sitting"] }, b: { goals: ["running", "sitting"] }, c: { goals: [] } };
+    const pool = [ex("a"), ex("b"), ex("c"), ex("d")];
+    expect(poolForGoal("sitting", pool, tagged).map((e) => e.id)).toEqual(["a", "b"]);
+    expect(poolForGoal("sleep", pool, tagged)).toEqual([]);
   });
 });
 

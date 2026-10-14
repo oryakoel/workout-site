@@ -11,22 +11,23 @@ import {
 } from "./lib/sessionClock.js";
 import { useWakeLock } from "./lib/wakeLock.js";
 import { EXERCISES, WORKOUT_TYPES } from "./data/exercises.js";
-import { EXERCISE_META } from "./data/exerciseMeta.js";
+import { EXERCISE_META, GOAL_LABELS } from "./data/exerciseMeta.js";
+import { focusAreasFor } from "./data/focusAreas.js";
 import {
   buildWorkout,
   buildQuickStartWorkout,
-  filterByType,
   QUICK_START_MINUTES,
   QUICK_START_TYPE,
-  FLEXIBILITY_FINALE_ID,
   DURATIONS_MINUTES,
 } from "./lib/workoutEngine.js";
+import { planPool } from "./lib/sessionPlan.js";
 import HomeScreen from "./components/HomeScreen.jsx";
 import LibraryScreen from "./components/LibraryScreen.jsx";
 import ActiveScreen from "./components/ActiveScreen.jsx";
 import DoneScreen from "./components/DoneScreen.jsx";
 import IdentityScreen from "./components/IdentityScreen.jsx";
 import PinScreen from "./components/PinScreen.jsx";
+import QuizScreen from "./components/QuizScreen.jsx";
 import HistoryScreen from "./components/HistoryScreen.jsx";
 import TabBar from "./components/TabBar.jsx";
 import { saveUser, readIdentity, GUEST } from "./lib/history.js";
@@ -37,6 +38,7 @@ import { useMyEntries } from "./lib/useMyEntries.js";
 import { computeConsistency } from "./lib/consistency.js";
 import { summarizeProgress, classifySession } from "./lib/sessionOutcome.js";
 import { loadPrefs, savePrefs } from "./lib/prefs.js";
+import { commitProfile, loadProfile, newProfile, skippedProfile, syncProfile } from "./lib/profile.js";
 import { loadLastUsed, recordUsed } from "./lib/exerciseHistory.js";
 
 export default function App() {
@@ -54,8 +56,18 @@ export default function App() {
   const sync = useSessionSync();
 
   const [prefs, setPrefs] = useState(() =>
-    loadPrefs({ types: ["auto", ...WORKOUT_TYPES.map((t) => t.id)], minutes: DURATIONS_MINUTES }),
+    loadPrefs({
+      types: ["auto", ...WORKOUT_TYPES.map((t) => t.id)],
+      minutes: DURATIONS_MINUTES,
+      goals: Object.keys(GOAL_LABELS),
+    }),
   );
+  const prefsRef = useRef(prefs);
+  // What the quiz learned about this person; null until they've answered or
+  // skipped it. Tied to whoever is signed in (guests have their own).
+  const [profile, setProfile] = useState(() => loadProfile(boot.identity.user));
+  const [quizEditing, setQuizEditing] = useState(false);
+  const [launchNotice, setLaunchNotice] = useState(null);
   // The signed-in person's own sessions drive the week card and the plant.
   // It reloads when returning to Home/History and when the sync queue changes.
   const mine = useMyEntries(currentUser, `${screen === "home" || screen === "history" ? screen : "other"}:${sync.pending}`);
@@ -90,13 +102,48 @@ export default function App() {
   const timeLeft = secondsLeft(clock, now);
   const wakeLockStatus = useWakeLock(screen === "active" && !isPaused);
 
-  const finalizeIdentity = (name) => {
+  const commitPrefs = (next) => {
+    prefsRef.current = next;
+    setPrefs(next);
+    savePrefs(next);
+  };
+
+  // Quiz answers become the defaults on Home (time, weekly goal, goal).
+  const applyProfileToPrefs = (p) => {
+    const current = prefsRef.current;
+    commitPrefs({ ...current, minutes: p.minutes ?? current.minutes, weeklyGoal: p.weeklyGoal ?? current.weeklyGoal, goal: p.goal });
+  };
+
+  // Picks up the person's profile from the server (a new device has none
+  // locally) and applies it if it changed.
+  const pullProfile = async (name) => {
+    const before = loadProfile(name)?.updatedAt;
+    const result = await syncProfile(name, getToken(name));
+    if (!result) return null;
+    setProfile(result);
+    if (result.updatedAt !== before) applyProfileToPrefs(result);
+    return result;
+  };
+
+  const finalizeIdentity = async (name) => {
     saveUser(name);
     setCurrentUser(name);
     setHasChosenIdentity(true);
     setPinFor(null);
-    setScreen("home");
     sync.flush();
+    const local = loadProfile(name);
+    setProfile(local);
+    if (local) {
+      setScreen("home");
+      pullProfile(name);
+      return;
+    }
+    // Nothing saved here: ask the server before asking the person, since
+    // they may have answered the quiz on another device.
+    setScreen("loading");
+    const fromServer = await pullProfile(name);
+    setQuizEditing(false);
+    setScreen(fromServer ? "home" : "quiz");
   };
 
   const chooseIdentity = (name) => {
@@ -117,6 +164,7 @@ export default function App() {
   const skipIdentity = () => {
     saveUser(GUEST);
     setCurrentUser(null);
+    setProfile(loadProfile(null));
     setHasChosenIdentity(true);
     setPinFor(null);
     setScreen("home");
@@ -125,7 +173,31 @@ export default function App() {
   // Train now without signing in, without forgetting who this device is.
   const continueUnsaved = () => {
     setCurrentUser(null);
+    setProfile(loadProfile(null));
     setPinFor(null);
+    setScreen("home");
+  };
+
+  const openQuiz = () => {
+    setQuizEditing(Boolean(profile && !profile.skipped));
+    setScreen("quiz");
+  };
+
+  const finishQuiz = (answers) => {
+    const answered = newProfile(answers);
+    setProfile(answered);
+    commitProfile(currentUser, currentUser ? getToken(currentUser) : null, answered);
+    applyProfileToPrefs(answered);
+    setScreen("home");
+  };
+
+  // Skipping is remembered, so the invitation doesn't keep coming back.
+  const skipQuiz = () => {
+    if (!profile) {
+      const skipped = skippedProfile();
+      setProfile(skipped);
+      commitProfile(currentUser, currentUser ? getToken(currentUser) : null, skipped);
+    }
     setScreen("home");
   };
 
@@ -146,29 +218,36 @@ export default function App() {
     setScreen("active");
   };
 
-  const changePrefs = (next) => {
-    setPrefs(next);
-    savePrefs(next);
-  };
+  const changePrefs = commitPrefs;
 
   const builderOptions = () => ({ meta: EXERCISE_META, lastUsed: loadLastUsed(), now: Date.now() });
 
   const startWorkout = () => {
-    const pool = filterByType(EXERCISES, prefs.type, EXERCISE_META);
-    const finalExercise =
-      prefs.type === "flexibility" ? EXERCISES.find((e) => e.id === FLEXIBILITY_FINALE_ID) : undefined;
-    // Calm sessions (flexibility, recovery) don't need a dynamic warm-up.
-    const needsWarmup = prefs.type !== "flexibility" && prefs.type !== "recovery";
-    const warmups = needsWarmup ? EXERCISES.filter((e) => EXERCISE_META[e.id]?.phase === "warmup") : [];
-    launchQueue(
-      buildWorkout(prefs.minutes, prefs.random, pool, finalExercise, { ...builderOptions(), warmups }),
-      prefs.minutes,
-      prefs.type,
+    const avoidLoads = profile?.sensitive ?? [];
+    const plan = planPool({ goal: prefs.goal, type: prefs.type, exercises: EXERCISES, meta: EXERCISE_META, avoidLoads });
+    const warmups = plan.needsWarmup ? EXERCISES.filter((e) => EXERCISE_META[e.id]?.phase === "warmup") : [];
+    const built = buildWorkout(prefs.minutes, prefs.random, plan.pool, plan.finalExercise, {
+      ...builderOptions(),
+      avoidLoads,
+      warmups,
+      focusAreas: focusAreasFor(profile?.focus),
+    });
+    if (built.length === 0) return;
+    setLaunchNotice(
+      plan.widened ? "הסוג שבחרתם כמעט כולו מעמיס על מה שביקשתם לחסוך, אז שילבנו תרגילים מסוגים אחרים." : null,
     );
+    launchQueue(built, prefs.minutes, prefs.goal ? `goal-${prefs.goal}` : prefs.type);
   };
 
   const quickStart = () => {
-    launchQueue(buildQuickStartWorkout(EXERCISES, builderOptions()), QUICK_START_MINUTES, QUICK_START_TYPE);
+    const built = buildQuickStartWorkout(EXERCISES, {
+      ...builderOptions(),
+      avoidLoads: profile?.sensitive ?? [],
+      focusAreas: focusAreasFor(profile?.focus),
+    });
+    if (built.length === 0) return;
+    setLaunchNotice(null);
+    launchQueue(built, QUICK_START_MINUTES, QUICK_START_TYPE);
   };
 
   const creditElapsed = (i, stepClock, t) => {
@@ -310,6 +389,22 @@ export default function App() {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [screen, isPaused]);
 
+  // On launch, quietly bring this device's profile up to date with the server.
+  useEffect(() => {
+    const name = boot.identity.user;
+    if (!name || !getToken(name)) return;
+    pullProfile(name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const quizInitial = {
+    goal: profile && !profile.skipped ? profile.goal : prefs.goal,
+    focus: profile?.focus ?? [],
+    sensitive: profile?.sensitive ?? [],
+    minutes: profile?.minutes ?? prefs.minutes,
+    weeklyGoal: profile?.weeklyGoal ?? prefs.weeklyGoal,
+  };
+
   const showTabs = screen === "home" || screen === "library" || screen === "history";
   const syncProps = {
     syncPending: sync.pending,
@@ -346,6 +441,22 @@ export default function App() {
               onContinueUnsaved={continueUnsaved}
             />
           )}
+          {screen === "loading" && (
+            <div className="flex h-full items-center justify-center">
+              <p role="status" className="text-base" style={{ color: C.textMuted }}>
+                בודקים...
+              </p>
+            </div>
+          )}
+          {screen === "quiz" && (
+            <QuizScreen
+              key={quizEditing ? "edit" : "new"}
+              initial={quizInitial}
+              editing={quizEditing}
+              onFinish={finishQuiz}
+              onSkip={skipQuiz}
+            />
+          )}
           {screen === "home" && (
             <HomeScreen
               prefs={prefs}
@@ -356,6 +467,9 @@ export default function App() {
               onSwitchUser={() => setScreen("identity")}
               consistency={consistency}
               consistencyOffline={mine.offline}
+              profile={profile}
+              onOpenQuiz={openQuiz}
+              onDismissInvite={skipQuiz}
               {...syncProps}
             />
           )}
@@ -369,6 +483,7 @@ export default function App() {
               isPaused={isPaused}
               interrupted={interrupted}
               wakeLockStatus={wakeLockStatus}
+              notice={launchNotice}
               onPauseToggle={togglePause}
               onSkip={goNext}
               onPrev={goPrev}

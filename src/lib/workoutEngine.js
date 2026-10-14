@@ -36,6 +36,11 @@ export function filterByType(exercises, typeId, meta = {}) {
   return pool.length > 0 ? pool : exercises;
 }
 
+// Every exercise tagged as good for a goal (sitting all day, before running…).
+export function poolForGoal(goal, exercises, meta = {}) {
+  return exercises.filter((e) => meta[e.id]?.goals?.includes(goal));
+}
+
 // Draws exercises without repeating one until every other exercise in
 // the pool has come up (a "shuffled bag"), so a longer workout stays
 // varied instead of looping the same few moves. With randomOrder=false
@@ -95,7 +100,7 @@ function exerciseSeconds(exercise) {
 //    them warm-up, main work, cooldown with few position changes.
 // Either way, time is counted as it was before: each exercise plus the rest
 // before the next, stopping once the target is reached.
-function planExercises(pool, targetSeconds, randomOrder, { meta, lastUsed, now, rng }) {
+function planExercises(pool, targetSeconds, randomOrder, { meta, lastUsed, now, rng, focusAreas }) {
   const sequence = [];
   let elapsed = 0;
 
@@ -112,7 +117,7 @@ function planExercises(pool, targetSeconds, randomOrder, { meta, lastUsed, now, 
 
   while (elapsed < targetSeconds) {
     const chosen = [];
-    for (const exercise of weightedOrder(pool, { lastUsed, now, rng })) {
+    for (const exercise of weightedOrder(pool, { lastUsed, now, rng, meta, focusAreas })) {
       chosen.push(exercise);
       elapsed += exerciseSeconds(exercise);
       if (elapsed >= targetSeconds) break;
@@ -137,9 +142,10 @@ function planExercises(pool, targetSeconds, randomOrder, { meta, lastUsed, now, 
 // appended as the workout's last exercise instead (used to close every
 // flexibility workout with splits practice).
 //
-// options: { meta, lastUsed, now, rng, avoidLoads, warmups } — see routineBuilder.js.
+// options: { meta, lastUsed, now, rng, avoidLoads, warmups, focusAreas } — see routineBuilder.js.
+// An empty result means avoidLoads left nothing to choose from.
 export function buildWorkout(minutes, randomOrder, exercises, finalExercise, options = {}) {
-  const { meta = {}, lastUsed = {}, now = Date.now(), rng = Math.random, avoidLoads = [], warmups = [] } = options;
+  const { meta = {}, lastUsed = {}, now = Date.now(), rng = Math.random, avoidLoads = [], warmups = [], focusAreas = [] } = options;
   const base = finalExercise ? exercises.filter((e) => e.id !== finalExercise.id) : exercises;
   const pool = withoutLoads(base, meta, avoidLoads);
   if (pool.length === 0) return [];
@@ -159,7 +165,7 @@ export function buildWorkout(minutes, randomOrder, exercises, finalExercise, opt
 
   const sequence = [
     ...orderForFlow(chosenWarmups, meta, rng),
-    ...planExercises(remaining.length > 0 ? remaining : pool, minutes * 60 - reserved, randomOrder, { meta, lastUsed, now, rng }),
+    ...planExercises(remaining.length > 0 ? remaining : pool, minutes * 60 - reserved, randomOrder, { meta, lastUsed, now, rng, focusAreas }),
   ];
   const queue = [];
 

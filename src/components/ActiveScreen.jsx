@@ -13,6 +13,7 @@ export default function ActiveScreen({
   isPaused,
   interrupted,
   wakeLockStatus,
+  notice,
   onPauseToggle,
   onSkip,
   onPrev,
@@ -92,6 +93,11 @@ export default function ActiveScreen({
 
       <ProgressDots queue={queue} index={index} />
 
+      {notice && item.isPrep && (
+        <p role="status" className="mt-3 px-4 py-3 rounded-xl text-sm leading-relaxed" style={{ backgroundColor: C.surface, border: `1px solid ${C.line}`, color: C.textMuted }}>
+          {notice}
+        </p>
+      )}
       {interrupted && isPaused && (
         <div
           role="status"
