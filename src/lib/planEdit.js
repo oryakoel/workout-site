@@ -82,6 +82,8 @@ export function swapItem(items, index, { exercises, meta = {}, avoidLoads = [], 
   const inPlan = new Set(items.map((i) => i.exercise.id));
   const preferredIds = new Set(preferred.map((e) => e.id));
   const mine = meta[current.exercise.id];
+  // Families already in the session, other than the one being replaced.
+  const usedFamilies = new Set(items.filter((_, i) => i !== index).map((i) => meta[i.exercise.id]?.family).filter(Boolean));
 
   const candidates = withoutLoads(exercises, meta, avoidLoads).filter((e) => !inPlan.has(e.id));
   if (candidates.length === 0) return items;
@@ -93,6 +95,7 @@ export function swapItem(items, index, { exercises, meta = {}, avoidLoads = [], 
     if (m && mine && m.phase === mine.phase) s += 2;
     if (m && mine && m.position === mine.position) s += 1;
     if (e.bilateral === current.exercise.bilateral) s += 0.5;
+    if (m?.family && usedFamilies.has(m.family)) s -= 6;
     return s;
   };
   const best = Math.max(...candidates.map(score));

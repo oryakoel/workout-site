@@ -1,4 +1,4 @@
-import { orderForFlow, weightedOrder, withoutLoads } from "./routineBuilder.js";
+import { orderForFlow, sameFamily, weightedOrder, withoutLoads } from "./routineBuilder.js";
 
 export const REST_SECONDS = 15;
 // A "get ready" countdown before the very first exercise, on top of the
@@ -124,8 +124,9 @@ function planExercises(pool, targetSeconds, randomOrder, { meta, lastUsed, now, 
       elapsed += REST_SECONDS;
     }
     const round = orderForFlow(chosen, meta, rng);
-    // Don't open a new round with the exercise the last one ended on.
-    if (sequence.length > 0 && round.length > 1 && round[0].id === sequence[sequence.length - 1].id) {
+    // Don't open a new round with the exercise (or a close variation) the
+    // last one ended on.
+    if (sequence.length > 0 && round.length > 1 && sameFamily(round[0], sequence[sequence.length - 1], meta)) {
       [round[0], round[1]] = [round[1], round[0]];
     }
     sequence.push(...round);
@@ -158,10 +159,15 @@ export function buildWorkout(minutes, randomOrder, exercises, finalExercise, opt
   );
   const chosenWarmups =
     !randomOrder && minutes >= 10 && safeWarmups.length > 0
-      ? weightedOrder(safeWarmups, { lastUsed, now, rng }).slice(0, minutes >= 20 ? 2 : 1)
+      ? weightedOrder(safeWarmups, { lastUsed, now, rng, meta }).slice(0, minutes >= 20 ? 2 : 1)
       : [];
   const reserved = chosenWarmups.reduce((sum, w) => sum + exerciseSeconds(w) + REST_SECONDS, 0);
-  const remaining = pool.filter((e) => !chosenWarmups.some((w) => w.id === e.id));
+  // The main part leaves out the warm-ups themselves and, when there is
+  // enough left to choose from, their close variations (no jumping jacks
+  // followed straight by high knees).
+  const notWarmups = pool.filter((e) => !chosenWarmups.some((w) => w.id === e.id));
+  const apart = notWarmups.filter((e) => !chosenWarmups.some((w) => sameFamily(e, w, meta)));
+  const remaining = apart.length >= 5 ? apart : notWarmups;
 
   const sequence = [
     ...orderForFlow(chosenWarmups, meta, rng),

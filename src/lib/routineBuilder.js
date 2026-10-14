@@ -24,16 +24,40 @@ function focusMultiplier(exercise, meta, focusAreas) {
   return (meta[exercise.id]?.areas ?? []).some((a) => focusAreas.includes(a)) ? FOCUS_BOOST : 1;
 }
 
+const familyOf = (exercise, meta) => meta[exercise.id]?.family ?? null;
+
+// Keeps the first exercise of each family where it is and sends the rest of
+// that family to the back, so a session only uses a second one when it has
+// run out of other choices.
+export function spreadFamilies(order, meta = {}) {
+  const seen = new Set();
+  const first = [];
+  const later = [];
+  for (const exercise of order) {
+    const family = familyOf(exercise, meta);
+    if (family && seen.has(family)) later.push(exercise);
+    else {
+      first.push(exercise);
+      if (family) seen.add(family);
+    }
+  }
+  return [...first, ...later];
+}
+
+// True when two exercises are the same move or a close variation.
+export const sameFamily = (a, b, meta = {}) => a.id === b.id || (familyOf(a, meta) !== null && familyOf(a, meta) === familyOf(b, meta));
+
 // A weighted random order: heavier items tend to come first, but any order
 // is possible (Efraimidis-Spirakis sampling).
 export function weightedOrder(pool, { lastUsed = {}, now = Date.now(), rng = Math.random, meta = {}, focusAreas = [] } = {}) {
-  return pool
+  const ordered = pool
     .map((exercise) => {
       const weight = recencyWeight(lastUsed[exercise.id], now) * focusMultiplier(exercise, meta, focusAreas);
       return { exercise, key: Math.pow(Math.max(rng(), 1e-9), 1 / weight) };
     })
     .sort((a, b) => b.key - a.key)
     .map((entry) => entry.exercise);
+  return spreadFamilies(ordered, meta);
 }
 
 const primaryArea = (exercise, meta) => meta[exercise.id]?.areas?.[0] ?? null;
@@ -66,6 +90,24 @@ export function orderForFlow(items, meta = {}, rng = Math.random) {
         break;
       }
     }
+  }
+
+  // Then the same for close variations: never back to back. A stand-in from
+  // the same block is preferred; failing that, from the same phase (a small
+  // position change beats doing near-identical moves twice in a row).
+  const samePhase = (a, b) => rank(a)[0] === rank(b)[0];
+  const separate = (i, within) => {
+    for (let j = i + 1; j < sorted.length && within(sorted[i], sorted[j]); j++) {
+      if (!sameFamily(sorted[j], sorted[i - 1], meta)) {
+        [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
+        return true;
+      }
+    }
+    return false;
+  };
+  for (let i = 1; i < sorted.length; i++) {
+    if (!sameFamily(sorted[i], sorted[i - 1], meta)) continue;
+    if (!separate(i, sameBlock)) separate(i, samePhase);
   }
   return sorted;
 }

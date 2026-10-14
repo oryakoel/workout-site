@@ -120,9 +120,39 @@ const TABLE = {
   "step-ups": ["work", 2, "standing", ["quads", "glutes"], ["knees"], ["running"], ["bench"]],
 };
 
+// Exercises that are really the same move or a close variation. A session
+// avoids using two from one family, and never puts them back to back, so you
+// don't do the pigeon, then the pigeon with a backbend.
+export const FAMILIES = {
+  pigeon: ["pigeon-pose", "pigeon-backbend", "seated-figure-4"],
+  "downward-dog": ["downward-dog", "downward-dog-wall"],
+  "standing-fold": ["standing-forward-fold", "wall-forward-fold-block"],
+  straddle: ["wide-leg-straddle-stretch", "straddle-side-reach", "straddle-fold-to-leg", "deep-straddle-fold", "middle-splits"],
+  butterfly: ["butterfly-stretch", "reclined-butterfly"],
+  lunge: [
+    "hip-flexor-stretch",
+    "lunge-knee-hands",
+    "runners-stretch",
+    "twisting-lunge-side-angle",
+    "extended-side-angle",
+    "lunge-hold",
+    "reverse-lunge-reach",
+    "runner-step-back-knee-drive",
+  ],
+  squat: ["squat-hold", "air-squats", "in-and-out-squats", "step-out-squat-walk", "wall-sit", "yogi-squat"],
+  plank: ["plank", "forearm-plank", "side-plank", "plank-knee-rotations", "reverse-plank-knee-drive"],
+  pushup: ["basic-pushups", "push-up-t-rotation", "side-to-side-pushups", "pushup-mountain-climber-combo"],
+  crunch: ["overhead-prayer-crunch", "heel-touches", "leg-extended-oblique-crunch", "reverse-crunch", "criss-cross-oblique-crunch", "bicycle-crunches"],
+  bounce: ["jumping-jack", "high-knees", "butt-kicks", "ghost-rope"],
+  "back-extension": ["cobra-quad-stretch", "sphinx-pose"],
+  "overhead-arms": ["overhead-triceps-stretch", "behind-head-clasp-stretch"],
+};
+
+const FAMILY_OF = Object.fromEntries(Object.entries(FAMILIES).flatMap(([family, ids]) => ids.map((id) => [id, family])));
+
 export const EXERCISE_META = Object.fromEntries(
   Object.entries(TABLE).map(([id, [phase, intensity, position, areas, load, goals, equipment = []]]) => [
     id,
-    { phase, intensity, position, areas, load, goals, equipment },
+    { phase, intensity, position, areas, load, goals, equipment, family: FAMILY_OF[id] ?? null },
   ]),
 );
