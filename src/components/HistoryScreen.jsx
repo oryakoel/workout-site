@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { C } from "../theme.js";
 import { WORKOUT_TYPES } from "../data/exercises.js";
 import { GOAL_LABELS } from "../data/exerciseMeta.js";
-import { fetchHistory, deleteWorkoutEntry } from "../lib/history.js";
+import { fetchHistoryResult, deleteWorkoutEntry } from "../lib/history.js";
 import { getAuthStatus, getToken } from "../lib/auth.js";
-import { Chip } from "./ui.jsx";
+import { Button, Chip } from "./ui.jsx";
+import ConfirmDialog from "./ConfirmDialog.jsx";
 import GardenCard from "./GardenCard.jsx";
 import SyncNotice from "./SyncNotice.jsx";
 import { Trash2 } from "lucide-react";
@@ -22,6 +23,9 @@ function formatDate(isoString) {
 export default function HistoryScreen({ currentUser, consistency, syncPending, needsSignIn, onSignIn }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [pendingDelete, setPendingDelete] = useState(null);
   const [userFilter, setUserFilter] = useState("all");
   // Names nobody has set a PIN for: their entries stay deletable by anyone.
   const [unclaimed, setUnclaimed] = useState(() => new Set());
@@ -29,16 +33,22 @@ export default function HistoryScreen({ currentUser, consistency, syncPending, n
 
   useEffect(() => {
     let cancelled = false;
-    fetchHistory().then((data) => {
+    fetchHistoryResult().then((result) => {
       if (!cancelled) {
-        setEntries(data);
+        setEntries(result.entries);
+        setLoadFailed(!result.ok);
         setLoading(false);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
+
+  const retry = () => {
+    setLoading(true);
+    setAttempt((n) => n + 1);
+  };
 
   const users = [...new Set(entries.map((e) => e.user_name))];
   const visible = userFilter === "all" ? entries : entries.filter((e) => e.user_name === userFilter);
@@ -62,7 +72,7 @@ export default function HistoryScreen({ currentUser, consistency, syncPending, n
   const canDelete = (entry) => entry.user_name === currentUser || unclaimed.has(entry.user_name);
 
   const handleDelete = async (entry) => {
-    if (!window.confirm("למחוק את האימון הזה לצמיתות?")) return;
+    setPendingDelete(null);
     setMessage(null);
     const result = await deleteWorkoutEntry(entry.id, getToken(currentUser));
     if (result.ok) setEntries((prev) => prev.filter((e) => e.id !== entry.id));
@@ -99,9 +109,18 @@ export default function HistoryScreen({ currentUser, consistency, syncPending, n
       )}
 
       {loading ? (
-        <p className="text-sm text-center" style={{ color: C.textMuted }}>
+        <p role="status" className="text-sm text-center" style={{ color: C.textMuted }}>
           טוען...
         </p>
+      ) : loadFailed ? (
+        <div role="alert" className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm leading-relaxed" style={{ color: C.textMuted }}>
+            לא הצלחנו לטעון את ההיסטוריה. בדקו את החיבור ונסו שוב.
+          </p>
+          <Button size="md" variant="secondary" onClick={retry}>
+            ניסיון נוסף
+          </Button>
+        </div>
       ) : visible.length === 0 ? (
         <p className="text-sm text-center" style={{ color: C.textMuted }}>
           עדיין אין אימונים שמורים
@@ -130,7 +149,7 @@ export default function HistoryScreen({ currentUser, consistency, syncPending, n
                 </span>
                 {canDelete(entry) && (
                   <button
-                    onClick={() => handleDelete(entry)}
+                    onClick={() => setPendingDelete(entry)}
                     aria-label="מחיקת אימון"
                     className="p-2 -m-2 touch-manipulation"
                     style={{ color: C.textMuted }}
@@ -142,6 +161,16 @@ export default function HistoryScreen({ currentUser, consistency, syncPending, n
             </div>
           ))}
         </div>
+      )}
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title="למחוק את האימון?"
+          message="המחיקה סופית ולא ניתן לשחזר אותו."
+          confirmLabel="מחיקה"
+          onConfirm={() => handleDelete(pendingDelete)}
+          onCancel={() => setPendingDelete(null)}
+        />
       )}
     </div>
   );

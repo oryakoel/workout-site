@@ -35,6 +35,7 @@ import {
 } from "./lib/routines.js";
 import HomeScreen from "./components/HomeScreen.jsx";
 import LibraryScreen from "./components/LibraryScreen.jsx";
+import ConfirmDialog from "./components/ConfirmDialog.jsx";
 import PreviewScreen from "./components/PreviewScreen.jsx";
 import ActiveScreen from "./components/ActiveScreen.jsx";
 import DoneScreen from "./components/DoneScreen.jsx";
@@ -434,27 +435,41 @@ export default function App() {
   };
 
   // Leaving mid-workout: under a minute is simply discarded; more than that
-  // is kept as a partial session (after asking, since it is saved).
+  // asks first. The clock pauses while the question is open.
+  const [quitDialog, setQuitDialog] = useState(null);
+  const resumeAfterQuitRef = useRef(false);
+
   const quitWorkout = () => {
     const t = Date.now();
     const { index: i, clock: c } = sessionRef.current;
     creditElapsed(i, c, t);
     const summary = summarizeProgress(queue, progressRef.current);
     const status = classifySession({ reachedEnd: false, ...summary });
-    if (!currentUser || status === "none") {
-      if (status !== "none") rememberDoneExercises();
+    if (status === "none") {
       setScreen("home");
       return;
     }
-    const wasRunning = isRunning(c);
-    if (wasRunning) commit({ ...sessionRef.current, clock: pauseClock(c, t) });
-    if (window.confirm("לצאת מהאימון? נשמור את מה שעשיתם כאימון חלקי.")) {
+    resumeAfterQuitRef.current = isRunning(c);
+    if (resumeAfterQuitRef.current) commit({ ...sessionRef.current, clock: pauseClock(c, t) });
+    setQuitDialog({ saves: Boolean(currentUser) });
+  };
+
+  const confirmQuit = () => {
+    setQuitDialog(null);
+    if (currentUser) {
       finishSession(false);
-    } else if (wasRunning) {
-      const resumeAt = Date.now();
-      commit({ ...sessionRef.current, clock: resumeClock(sessionRef.current.clock, resumeAt) });
-      setNow(resumeAt);
+    } else {
+      rememberDoneExercises();
+      setScreen("home");
     }
+  };
+
+  const cancelQuit = () => {
+    setQuitDialog(null);
+    if (!resumeAfterQuitRef.current) return;
+    const resumeAt = Date.now();
+    commit({ ...sessionRef.current, clock: resumeClock(sessionRef.current.clock, resumeAt) });
+    setNow(resumeAt);
   };
 
   // Tick 4x a second against the wall clock; stepping through elapsed
@@ -619,6 +634,16 @@ export default function App() {
             <DoneScreen outcome={outcome} syncPending={sync.pending} onRestart={() => setScreen("home")} />
           )}
         </main>
+        {quitDialog && screen === "active" && (
+          <ConfirmDialog
+            title="לצאת מהאימון?"
+            message={quitDialog.saves ? "נשמור את מה שעשיתם כאימון חלקי." : "אתם מתאמנים בלי שם, ולכן האימון הזה לא יישמר."}
+            confirmLabel={quitDialog.saves ? "יציאה ושמירה" : "יציאה"}
+            cancelLabel="המשך באימון"
+            onConfirm={confirmQuit}
+            onCancel={cancelQuit}
+          />
+        )}
         {showTabs && <TabBar active={screen} onChange={setScreen} />}
       </div>
     </div>

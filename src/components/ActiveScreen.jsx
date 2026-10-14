@@ -1,10 +1,48 @@
-import { useEffect, useRef } from "react";
-import { Play, Pause, SkipForward, SkipBack, X, Volume2, VolumeX } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Play, Pause, SkipForward, SkipBack, X, Volume2, VolumeX } from "lucide-react";
 import { C, FONT_MONO } from "../theme.js";
 import { formatTime, SIDE_LABEL } from "../lib/workoutEngine.js";
 import { exerciseAnnouncement, restAnnouncement, prepAnnouncement, tenSecondsLeftAnnouncement } from "../lib/announcements.js";
 import { announce, cancelSpeech, playBeep, useTTSMuted } from "../lib/tts.js";
+import { vibrate, BUZZ_COUNTDOWN, BUZZ_STEP } from "../lib/haptics.js";
 import ProgressDots from "./ProgressDots.jsx";
+
+// One tip up front, the rest a tap away, so the screen stays calm mid-move.
+function Tips({ tips }) {
+  const [open, setOpen] = useState(false);
+  const [first, ...rest] = tips;
+  if (!first) return null;
+  return (
+    <div className="w-full max-w-sm flex flex-col gap-2 px-2">
+      <p className="text-base leading-relaxed text-center" style={{ color: C.text }}>
+        {first}
+      </p>
+      {rest.length > 0 && (
+        <>
+          <button
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            className="self-center flex items-center gap-1 h-11 px-3 text-sm touch-manipulation"
+            style={{ color: C.textMuted }}
+          >
+            {open ? "פחות טיפים" : `עוד ${rest.length === 1 ? "טיפ" : `${rest.length} טיפים`}`}
+            <ChevronDown size={16} aria-hidden="true" style={{ transform: open ? "rotate(180deg)" : undefined }} />
+          </button>
+          {open && (
+            <ul className="flex flex-col gap-2">
+              {rest.map((tip, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm leading-relaxed" style={{ color: C.textMuted }}>
+                  <span className="mt-1.5 shrink-0 rounded-full" style={{ width: "5px", height: "5px", backgroundColor: C.accent }} />
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function ActiveScreen({
   queue,
@@ -32,6 +70,7 @@ export default function ActiveScreen({
   useEffect(() => {
     announcedTenSecRef.current = null;
     beepedSecondsRef.current = new Set();
+    vibrate(BUZZ_STEP);
     if (item.type === "exercise") {
       announce(item.side === "left" ? "side" : "exercise", exerciseAnnouncement(item.exercise, item.side));
     } else if (item.isPrep) {
@@ -63,6 +102,7 @@ export default function ActiveScreen({
     if (timeLeft >= 1 && timeLeft <= 3 && !beepedSecondsRef.current.has(timeLeft)) {
       beepedSecondsRef.current.add(timeLeft);
       playBeep();
+      vibrate(BUZZ_COUNTDOWN);
     }
   }, [timeLeft, isPaused]);
 
@@ -171,14 +211,7 @@ export default function ActiveScreen({
                 {item.exercise.muscleGroup}
               </span>
             </div>
-            <ul className="w-full max-w-sm flex flex-col gap-2 px-2">
-              {item.exercise.tips.map((tip, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm leading-relaxed" style={{ color: C.text }}>
-                  <span className="mt-1.5 shrink-0 rounded-full" style={{ width: "5px", height: "5px", backgroundColor: C.accent }} />
-                  {tip}
-                </li>
-              ))}
-            </ul>
+            <Tips key={index} tips={item.exercise.tips} />
           </>
         )}
       </div>
