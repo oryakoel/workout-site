@@ -5,6 +5,7 @@ import { buildWorkout, PREP_SECONDS, REST_SECONDS } from "./workoutEngine.js";
 import {
   adjustDuration,
   DURATION_STEP_SECONDS,
+  dropIndex,
   MAX_EXERCISE_SECONDS,
   MIN_EXERCISE_SECONDS,
   moveItem,
@@ -107,5 +108,19 @@ describe("swapItem", () => {
   it("leaves things alone when no alternative exists", () => {
     const only = [items[0]];
     expect(swapItem(only, 0, { exercises: [items[0].exercise], meta: EXERCISE_META })).toBe(only);
+  });
+});
+
+describe("dropIndex", () => {
+  const centres = [50, 150, 250, 350];
+  it("stays put until the dragged item passes a neighbour's centre", () => {
+    expect(dropIndex(centres, 1, 150)).toBe(1);
+    expect(dropIndex(centres, 1, 190)).toBe(1);
+    expect(dropIndex(centres, 1, 260)).toBe(2);
+  });
+  it("moves up and down to the far ends and no further", () => {
+    expect(dropIndex(centres, 3, -500)).toBe(0);
+    expect(dropIndex(centres, 0, 9999)).toBe(3);
+    expect(dropIndex(centres, 2, 100)).toBe(1);
   });
 });

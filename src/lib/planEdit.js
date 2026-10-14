@@ -106,3 +106,14 @@ export function swapItem(items, index, { exercises, meta = {}, avoidLoads = [], 
     i === index ? { exercise: chosen, duration: chosen.defaultDurationSeconds } : item,
   );
 }
+
+// Where a dragged item would land: its place in the list is the number of
+// other items whose centre is above the dragged item's centre. `centres` are
+// the items' resting centres (top to bottom), `from` the dragged index.
+export function dropIndex(centres, from, draggedCentre) {
+  let above = 0;
+  centres.forEach((c, i) => {
+    if (i !== from && c < draggedCentre) above++;
+  });
+  return above;
+}
